@@ -1,0 +1,20 @@
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\obj\Debug\EmbyVision.csprojResolveAssemblyReference.cache
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\EmbyVision.exe.config
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\EmbyVision.exe
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\EmbyVision.pdb
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\obj\Debug\EmbyVision.exe
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\obj\Debug\EmbyVision.pdb
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\Newtonsoft.Json.dll
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\RestSharp.dll
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\Newtonsoft.Json.xml
+c:\users\smillward\documents\visual studio 2017\Projects\EmbyVision\EmbyVision\bin\Debug\RestSharp.xml
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\EmbyVision.exe.config
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\EmbyVision.exe
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\EmbyVision.pdb
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\Newtonsoft.Json.dll
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\RestSharp.dll
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\Newtonsoft.Json.xml
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\RestSharp.xml
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\obj\Debug\EmbyVision.csprojResolveAssemblyReference.cache
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\obj\Debug\EmbyVision.exe
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\obj\Debug\EmbyVision.pdb

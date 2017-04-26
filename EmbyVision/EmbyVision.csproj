@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D9219885-47BE-40C9-9767-FEE294A29B01}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>EmbyVision</RootNamespace>
+    <AssemblyName>EmbyVision</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Speech" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Base\CommandLineCommands.cs" />
+    <Compile Include="Base\Common.cs" />
+    <Compile Include="Base\Logger.cs" />
+    <Compile Include="Base\Options.cs" />
+    <Compile Include="Base\VmTimer.cs" />
+    <Compile Include="Emby\Classes\EmAuth.cs" />
+    <Compile Include="Emby\Classes\EmAuthResult.cs" />
+    <Compile Include="Emby\Classes\EmbyServer.cs" />
+    <Compile Include="Emby\Classes\EmCatalogList.cs" />
+    <Compile Include="Emby\Classes\EmChapter.cs" />
+    <Compile Include="Emby\Classes\EmClient.cs" />
+    <Compile Include="Emby\Classes\EmConfiguration.cs" />
+    <Compile Include="Emby\Classes\EmConnection.cs" />
+    <Compile Include="Emby\Classes\EmConnectResult.cs" />
+    <Compile Include="Emby\Classes\EmExchToken.cs" />
+    <Compile Include="Emby\Classes\EmImageTags.cs" />
+    <Compile Include="Emby\Classes\EmMediaItem.cs" />
+    <Compile Include="Emby\Classes\EmMediaStreams.cs" />
+    <Compile Include="Emby\Classes\EmPlayState.cs" />
+    <Compile Include="Emby\Classes\EmPolicy.cs" />
+    <Compile Include="Emby\Classes\EmSeason.cs" />
+    <Compile Include="Emby\Classes\EmSeries.cs" />
+    <Compile Include="Emby\Classes\EmServer.cs" />
+    <Compile Include="Emby\Classes\EmSessionInfo.cs" />
+    <Compile Include="Emby\Classes\EmTVInfo.cs" />
+    <Compile Include="Emby\Classes\EmTVService.cs" />
+    <Compile Include="Emby\Classes\EmTVTuner.cs" />
+    <Compile Include="Emby\Classes\EmUdpClient.cs" />
+    <Compile Include="Emby\Classes\EmUser.cs" />
+    <Compile Include="Emby\Classes\EmUserData.cs" />
+    <Compile Include="Emby\EmbyConnector.cs" />
+    <Compile Include="Emby\EmbyServerHelper.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rest\RestClient.cs" />
+    <Compile Include="Speech\BabbleCommand.cs" />
+    <Compile Include="Speech\BaseSpeechItem.cs" />
+    <Compile Include="Speech\CommandList.cs" />
+    <Compile Include="Speech\DictationCommand.cs" />
+    <Compile Include="Speech\Listener.cs" />
+    <Compile Include="Speech\OptionalCommandList.cs" />
+    <Compile Include="Speech\SelectCommandList.cs" />
+    <Compile Include="Speech\SpeechContextItem.cs" />
+    <Compile Include="Speech\SpeechItem.cs" />
+    <Compile Include="Speech\Talker.cs" />
+    <Compile Include="Speech\VoiceCommand.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

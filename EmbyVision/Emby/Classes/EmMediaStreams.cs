@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmbyVision.Emby.Classes
+{
+    public class EmMediaStream
+    {
+        public string Codec { get; set; }
+        public string CodecTag { get; set; }
+        public string TimeBase { get; set; }
+        public string CodecTimeBase { get; set; }
+        public bool IsInterlaced { get; set; }
+        public bool AllowStreamCopy { get; set; }
+        public long BitRate { get; set; }
+        public int RefFrames { get; set; }
+        public bool IsDefault { get; set; }
+        public bool IsForced { get; set; }
+        public int Height { get; set; }
+        public int Width { get; set; }
+        public float AverageFrameRate { get; set; }
+        public float RealFrameRate { get; set; }
+        public string Profile { get; set; }
+        public string Type { get; set; }
+        public string AspectRatio { get; set; }
+        public int Index { get; set; }
+        public bool IsExternal { get; set; }
+        public bool IsTextSubtitleStream { get; set; }
+        public bool SupportsExternalStream { get; set; }
+        public string PixelFormat { get; set; }
+        public int Level { get; set; }
+        public bool IsAnamorphic { get; set; }
+        public string DisplayTitle { get; set; }
+        public string ChannelLayout { get; set; }
+        public int Channels { get; set; }
+        public long SampleRate { get; set; }
+    }
+}
