@@ -34,7 +34,7 @@ namespace EmbyVision.Emby.Classes
         /// <returns></returns>
         public RestResult<EmClient> Refresh()
         {
-            using (RestClient Client = Server.Conn.GetClient())
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 Logger.Log("Emby Client", "Refreshing client information");
                 Client.AddQueryParameter("DeviceId", this.DeviceId, RestClient.ParameterType.Query);
@@ -104,7 +104,7 @@ namespace EmbyVision.Emby.Classes
                 }
             if (FoundStream == null)
                 return new RestClient.RestResult<EmMediaStream>() { Error = string.Format("Track number {0} does not exist", TrackNumber), Success = false };
-            using (RestClient Client = Server.Conn.GetClient())
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 Client.AddQueryParameter("Index", FoundStream.Index.ToString(), RestClient.ParameterType.Query);
                 RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/SetAudioStreamIndex", this.Id), RestClient.PostType.POST);
@@ -126,7 +126,7 @@ namespace EmbyVision.Emby.Classes
             }
             if (this.NowPlayingItem == null)
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
-            using (RestClient Client = Server.Conn.GetClient())
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Stop", this.Id), PostType.POST);
                 if (Result.Success)
@@ -149,7 +149,7 @@ namespace EmbyVision.Emby.Classes
             }
             if (this.NowPlayingItem == null)
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
-            using (RestClient Client = Server.Conn.GetClient())
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Pause", this.Id), PostType.POST);
                 return Result;
@@ -170,7 +170,7 @@ namespace EmbyVision.Emby.Classes
             }
             if (this.NowPlayingItem == null)
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
-            using (RestClient Client = Server.Conn.GetClient())
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Unpause", this.Id), PostType.POST);
                 return Result;
@@ -186,7 +186,7 @@ namespace EmbyVision.Emby.Classes
             if (!Server.SelectedClient.SupportedCommands.Contains("DisplayContent"))
                 return new RestResult() { Error = "Current client does not support content display", Success = false };
             /*
-            using (RestClient Client = Server.Conn.GetClient())
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 Client.SetContent(new EmCommandArgs() { Arguments = new EmDisplayMedia() { ItemId = Item.Seasons[0].Episodes[0].Id } });
                 RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
@@ -200,7 +200,7 @@ namespace EmbyVision.Emby.Classes
             if (!Server.SelectedClient.SupportedCommands.Contains("DisplayContent"))
                 return new RestClient.RestResult() { Error = "Current client does not support content display", Success = false };
 
-            /*  using (RestClient Client = Server.GetClient())
+            /*  using (RestClient Client = Server.GetClient(Server.SelectedUser))
               {
                   Client.AddQueryParameter("ItemId", Item.Episodes[0].Id, RestClient.ParameterType.Query);
                   RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
@@ -213,7 +213,7 @@ namespace EmbyVision.Emby.Classes
             if (!Server.SelectedClient.SupportedCommands.Contains("DisplayContent"))
                 return new RestClient.RestResult() { Error = "Current client does not support content display", Success = false };
 
-            /* using (RestClient Client = Server.GetClient())
+            /* using (RestClient Client = Server.GetClient(Server.SelectedUser))
              {
                  Client.AddQueryParameter("ItemId", Item.Id.ToString(), RestClient.ParameterType.Query);
                  RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);

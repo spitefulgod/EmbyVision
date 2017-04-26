@@ -25,14 +25,13 @@ namespace EmbyVision.Emby.Classes
             Client.AddQueryParameter("X-MediaBrowser-Token", AccessKey, ParameterType.Header);
             return Client;
         }
-       /* public RestClient GetClient(EmUser User)
+        public RestClient GetClient(EmUser User)
         {
             if(User == null)
                 return GetClient();
             RestClient Client = GetClient();
-            Client.AddQueryParameter("X-MediaBrowser-Token", AccessKey, ParameterType.Header);
-            Client.AddQueryParameter("X-Emby-Authorization", User.Authorisation, ParameterType.Header);
+            Client.AddQueryParameter("Authorization", User.Authorisation, ParameterType.Header);
             return Client;
-        }*/
+        }
     }
 }

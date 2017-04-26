@@ -136,7 +136,7 @@ namespace EmbyVision.Emby.Classes
         /// <returns></returns>
         public RestResult<List<EmClient>> RefreshClients()
         {
-            using (RestClient Client = Conn.GetClient())
+            using (RestClient Client = Conn.GetClient(SelectedUser))
             {
                 Logger.Log("Emby Server", "Retrieving client list");
                 Client.AddQueryParameter("ControllableByUserId", SelectedUser.UsableId, RestClient.ParameterType.Query);
@@ -173,7 +173,7 @@ namespace EmbyVision.Emby.Classes
         {
             Reset();
             Logger.Log("Emby Server", "Retrieving catalog listings");
-            using (RestClient Client = Conn.GetClient())
+            using (RestClient Client = Conn.GetClient(SelectedUser))
             {
                 // Retieve movies
                 RestResult<EmCatalogList> MovieResult = Client.Execute<EmCatalogList>(string.Format("Users/{0}/Items?Recursive=true&IncludeItemTypes=Movie", SelectedUser.Id), RestClient.PostType.GET);
@@ -287,7 +287,7 @@ namespace EmbyVision.Emby.Classes
              }*/
              // there's not header item here.
             Logger.Log(string.Format("Sending play command for media item {0} ({1})", Item.Id, Item.Name));
-            using (RestClient Client = Conn.GetClient())
+            using (RestClient Client = Conn.GetClient(SelectedUser))
             {
                 Client.AddQueryParameter("ItemIds", Item.Id, RestClient.ParameterType.Query);
                 Client.AddQueryParameter("StartPositionTicks", "0", RestClient.ParameterType.Query);
