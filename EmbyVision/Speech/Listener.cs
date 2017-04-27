@@ -117,7 +117,7 @@ namespace EmbyVision.Speech
             int Counter = 0;
             while (Counter < _RecEngine.Grammars.Count)
             {
-                Grammar LoadedGrammar = _RecEngine.Grammars[Counter];
+                Grammar LoadedGrammar = _RecEngine.Grammars[Counter++];
                 if (LoadedGrammar.Name.Contains(Context + '\n'))
                     return true;
             }
@@ -193,8 +193,11 @@ namespace EmbyVision.Speech
                                 else
                                 {
                                     Choices choices = new Choices();
-                                    foreach (string spi in sp.Commands.GetItems())
-                                        choices.Add(spi);
+                                    foreach (object spi in sp.Commands.GetItems())
+                                        if (spi is SpeechContextItem)
+                                            choices.Add((spi as SpeechContextItem).Item);
+                                        else
+                                            choices.Add(spi.ToString());
                                     if (sp.Type == 0)
                                         gb.Append(new GrammarBuilder(choices));
                                     if (sp.Type == 1)

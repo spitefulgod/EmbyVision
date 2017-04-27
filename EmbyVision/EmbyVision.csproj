@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Base\CommandLineCommands.cs" />
     <Compile Include="Base\Common.cs" />
+    <Compile Include="Base\CommonSpeechCommands.cs" />
     <Compile Include="Base\Logger.cs" />
     <Compile Include="Base\Options.cs" />
     <Compile Include="Base\VmTimer.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Emby\Classes\EmExchToken.cs" />
     <Compile Include="Emby\Classes\EmImageTags.cs" />
     <Compile Include="Emby\Classes\EmMediaItem.cs" />
+    <Compile Include="Emby\Classes\EmMediaSource.cs" />
     <Compile Include="Emby\Classes\EmMediaStreams.cs" />
     <Compile Include="Emby\Classes\EmPlayState.cs" />
     <Compile Include="Emby\Classes\EmPolicy.cs" />

@@ -20,6 +20,7 @@ namespace EmbyVision.Base
         public string DefaultClient { get; set; }
         public string ConnectedId { get; set; }
         public string DeviceId { get; set; }
+        public bool ForcePrevServer { get; set; }
         [JsonIgnore]
         public string ExternalIPAddr { get; set; }
         [JsonIgnore]
@@ -105,7 +106,7 @@ namespace EmbyVision.Base
                 using (StreamReader Reader = new StreamReader(Stream))
                 {
                     string Json = Reader.ReadToEnd();
-                    Options Options = JsonConvert.DeserializeObject<Options>(Json);
+                    Options Options = JsonConvert.DeserializeObject<Options>(Json, new JsonSerializerSettings { DateTimeZoneHandling = DateTimeZoneHandling.Local });
                     // Copy the properties.
                     FieldInfo[] myObjectFields = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 

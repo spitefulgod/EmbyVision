@@ -29,6 +29,13 @@ namespace EmbyVision.Emby
         public string ExternalIPAddr { get; private set; }
         private EmbyServerHelper ConnectedServer { get; set; }
         private EmbyServer SelectedServer { get; set; }
+        public bool IsConnected
+        {
+            get
+            {
+                return SelectedServer != null && SelectedServer.SelectedClient != null;
+            }
+        }
 
         public EmbyConnector(Talker Talker, Listener Listener)
         {
@@ -97,7 +104,8 @@ namespace EmbyVision.Emby
                     if (SelectList["Type"].ToString() == "Server")
                     {
                         Talker.Speak(ConnectedServer.Servers, "ServerName", "Server", true);
-                        Talker.Queue(string.Format("You are currently connected to the server {0}", SelectedServer.ServerName));
+                        if(SelectedServer != null)
+                            Talker.Queue(string.Format("You are currently connected to the server {0}", SelectedServer.ServerName));
                         break;
                     }
                     else
@@ -232,36 +240,69 @@ namespace EmbyVision.Emby
                     TalkCatalog(true);
                     // Say what we have.
                     break;
+                case "ProgramInfo":
+                    if(SelectedServer == null)
+                    {
+                        Talker.Speak("You are currently not connected to a server, try saying List Servers and then connect to a server");
+                        break;
+                    }
+                    RestResult<EmClient> PIClient = SelectedServer.SelectedClient.Refresh();
+                    if (!PIClient.Success)
+                    {
+                        Talker.Speak(string.Format("Unable to retrieve client information : {0}", PIClient.Error));
+                        break;
+                    }
+                    if (PIClient.Response.NowPlayingItem == null)
+                    {
+                        Talker.Speak("You are currently not watching anything");
+                        break;
+                    }
+                    EmMediaItem PIWatchingItem = SelectedServer.SelectedClient.NowPlayingItem;
+                    PIWatchingItem.Refresh(this.SelectedServer);
+                    // Overview of current playing things.
+                    Talker.Stop();
+                    ListAdditionalInfo(PIWatchingItem, 2);
+                    break;
                 case "WhatAmIWatching":
                     if (SelectedServer == null)
                     {
                         Talker.Speak("You are currently not connected to a server, try saying List Servers and then connect to a server");
                         break;
                     }
-                    RestResult<EmClient> Client = SelectedServer.SelectedClient.Refresh();
-                    if (!Client.Success)
+                    RestResult<EmClient> WIAClient = SelectedServer.SelectedClient.Refresh();
+                    if (!WIAClient.Success)
                     {
-                        Talker.Speak(string.Format("Unable to retrieve client information : {0}", Client.Error));
+                        Talker.Speak(string.Format("Unable to retrieve client information : {0}", WIAClient.Error));
                         break;
                     }
-                    if (Client.Response.NowPlayingItem == null)
+                    if (WIAClient.Response.NowPlayingItem == null)
                     {
                         Talker.Speak("You are currently not watching anything");
                         break;
                     }
-                    EmMediaItem WatchingItem = SelectedServer.SelectedClient.NowPlayingItem;
-                    switch (WatchingItem.Type)
+                    EmMediaItem NWWatchingItem = SelectedServer.SelectedClient.NowPlayingItem;
+                    NWWatchingItem.Refresh(this.SelectedServer);
+                    bool StateEnd = false;
+                    switch (NWWatchingItem.Type)
                     {
                         case "TvChannel":
-                            Talker.Speak(string.Format("You are currently watching the TV Channel {0}", WatchingItem.Name));
+                            Talker.Speak(string.Format("You are currently watching the TV Channel {0}", NWWatchingItem.Name));
+                            StateEnd = true;
                             break;
                         case "Movie":
-                            Talker.Speak(string.Format("You are currently watching the Movie {0}", WatchingItem.Name));
+                            Talker.Speak(string.Format("You are currently watching the Movie {0}", NWWatchingItem.Name));
+                            StateEnd = true;
                             break;
                         case "Episode":
-                            Talker.Speak(string.Format("You are currently watching season {0} episode {1} TV Series {2}", WatchingItem.ParentIndexNumber, WatchingItem.IndexNumber, WatchingItem.SeriesName));
+                            Talker.Speak(string.Format("You are currently watching season {0} episode {1} of the TV Series {2}", NWWatchingItem.ParentIndexNumber, NWWatchingItem.IndexNumber, NWWatchingItem.SeriesName));
+                            if (!string.IsNullOrEmpty(NWWatchingItem.Name))
+                                Talker.Queue(NWWatchingItem.Name);
+                            StateEnd = true;
                             break;
                     }
+                    // Tell the user when the program is ending.
+                    if (StateEnd)
+                        ListAdditionalInfo(NWWatchingItem, 1);
                     break;
                 case "RefreshServerList":
                     RefreshServerList(false);
@@ -706,6 +747,35 @@ namespace EmbyVision.Emby
                 });
                 Commands.Add(new VoiceCommand()
                 {
+                    Name = "ProgramInfo",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList("Tell me"),
+                            new OptionalCommandList("more"),
+                            new OptionalCommandList("information", "details"),
+                            new CommandList("about what i'm watching")
+                        ),
+                        new SpeechItem(
+                            new CommandList("Tell me"),
+                            new OptionalCommandList("more"),
+                            new OptionalCommandList("information", "details"),
+                            new CommandList("about", "what happens in"),
+                            new OptionalCommandList("this", "the current"),
+                            new CommandList(All)
+                        ),
+                        new SpeechItem(
+                            new CommandList("What happens", "What is", "Tell me what"),
+                            new OptionalCommandList("in"),
+                            new OptionalCommandList("this"),
+                            new CommandList(All),
+                            new OptionalCommandList("is"),
+                            new OptionalCommandList("about")
+                        )
+                    }
+                });
+                Commands.Add(new VoiceCommand()
+                {
                     Name = "ListTVEpisodes",
                     Commands = new List<SpeechItem>()
                     {
@@ -797,6 +867,29 @@ namespace EmbyVision.Emby
             Listener.CreateGrammarList("Emby", Commands);
         }
         /// <summary>
+        /// Talks some additional info on the given program
+        /// </summary>
+        /// <param name="Program"></param>
+        /// <param name="Level"></param>
+        private void ListAdditionalInfo(EmMediaItem Program, byte Level)
+        {
+            EmMediaItem CurrentProgram = Program.CurrentProgram ?? Program;
+            if (Program.CurrentProgram != null && !string.IsNullOrEmpty(Program.CurrentProgram.Name))
+                Talker.Queue(string.Format(Program.CurrentProgram.Name));
+            if(CurrentProgram.StartDate > DateTime.Now.AddDays(-2))
+            {
+                Talker.Queue(string.Format("Started at {0} {1}", CurrentProgram.StartDate.Hour > 12 ? CurrentProgram.StartDate.Hour - 12 : CurrentProgram.StartDate.Hour, CurrentProgram.StartDate.Minute == 0 ? "o'clock" : CurrentProgram.StartDate.Minute.ToString()));
+            }
+            if (CurrentProgram.EndDate > DateTime.Now)
+            {
+                TimeSpan EndingDiff = CurrentProgram.EndDate - DateTime.Now;
+                if (EndingDiff.Minutes > 0 && EndingDiff.Hours < 4)
+                    Talker.Queue(string.Format("Ending in {0} minute{1}", EndingDiff.Minutes, EndingDiff.Minutes == 1 ? "" : "s"));
+            }
+            if (Level == 2 && !string.IsNullOrEmpty(CurrentProgram.Overview))
+                Talker.Queue(CurrentProgram.Overview);
+        }
+        /// <summary>
         /// Start up
         /// </summary>
         public void Start ()
@@ -836,8 +929,8 @@ namespace EmbyVision.Emby
                             UseServer = Server;
                             break;
                         }
-                // get a default server?
-                if (UseServer == null)
+                // get a default server, as long as the force Previous server isn't initialised
+                if (UseServer == null && !(Options.Instance.ForcePrevServer && string.IsNullOrEmpty(Options.Instance.ConnectedId)))
                     foreach (EmbyServer Server in ConnectedServer.Servers)
                         if (Server.Conn.IsLocal || (UseServer == null && !Server.ConnectionAttempted))
                             UseServer = Server;

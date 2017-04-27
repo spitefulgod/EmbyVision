@@ -31,10 +31,15 @@ namespace EmbyVision.Base
                         Console.WriteLine("DisableEmbyBasic     Removes any specified basic connection details");
                         Console.WriteLine("SetDefaultServer     Sets the default server when using basic authentication");
                         Console.WriteLine("GetSettings          Retrieves a list of current settings");
+                        Console.WriteLine("ForcePreviousServer  Makes sure the only connects to the last used emby connect server");
                     } else
                     {
                         switch (Args[0].ToLower())
                         {
+                            case "forcepreviousserver":
+                                Console.WriteLine("ForcePreviousServer true | false");
+                                Console.WriteLine("Makes sure the only connects to the last used emby connect server");
+                                break;
                             case "enableembyconnect":
                                 Console.WriteLine("EnableEmbyConnect <Username> <Password>");
                                 Console.WriteLine("Attempt connection to the emby connect service using the credentials supplied");
@@ -67,6 +72,18 @@ namespace EmbyVision.Base
                                 break;
                         }
                     }
+                    break;
+                case "forcepreviousserver":
+                    bool BoolTemp;
+                    if (Args.Length < 1 || !bool.TryParse(Args[0], out BoolTemp))
+                    {
+                        Console.WriteLine("ForcePreviousServer true | false");
+                        Console.WriteLine("Makes sure the only connects to the last used emby connect server");
+                        break;
+                    }
+                    Options.Instance.ForcePrevServer = BoolTemp;
+                    Options.Instance.SaveOptions();
+                    Console.WriteLine(string.Format("Force Previous Server {0}", BoolTemp ? "Enabled" : "Disabled"));
                     break;
                 case "enableembyconnect":
                     if (Args.Length < 2)

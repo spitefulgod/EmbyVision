@@ -13,5 +13,6 @@ namespace EmbyVision.Emby.Classes
         public bool IsFavorite { get; set; }
         public bool Played { get; set; }
         public string Key { get; set; }
+        public DateTime? LastPlayedDate { get; set; }
     }
 }

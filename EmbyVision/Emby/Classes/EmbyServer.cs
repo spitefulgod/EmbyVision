@@ -32,6 +32,9 @@ namespace EmbyVision.Emby.Classes
         public EmbyServer()
         {
             ConnectionAttempted = false;
+            Movies = new List<EmMediaItem>();
+            TVChannels = new List<EmMediaItem>();
+            TVShows = new List<EmSeries>();
         }
         /// <summary>
         /// Connects to the given server, then extracts a list of items on that server.
@@ -219,7 +222,10 @@ namespace EmbyVision.Emby.Classes
                     Logger.Log("Emby Server", "Unable to retrieve TV channel catalog");
                     Logger.Log("Emby Server", TVSettings.Error);
                 }
-
+                // Fix anomolies
+                TVChannels = TVChannels ?? new List<EmMediaItem>();
+                TVShows = TVShows ?? new List<EmSeries>();
+                Movies = Movies ?? new List<EmMediaItem>();
                 return new RestResult() { Success = true };
             }
         }

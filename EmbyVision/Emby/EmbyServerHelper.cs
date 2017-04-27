@@ -98,7 +98,7 @@ namespace EmbyVision.Emby
                             if (ServerResponseData == null)
                                 break;
                             string ServerResponse = Encoding.ASCII.GetString(ServerResponseData);
-                            EmUdpClient Return = JsonConvert.DeserializeObject<EmUdpClient>(ServerResponse);
+                            EmUdpClient Return = JsonConvert.DeserializeObject<EmUdpClient>(ServerResponse, new JsonSerializerSettings { DateTimeZoneHandling = DateTimeZoneHandling.Local });
                             Servers.Add(new EmbyServer() { Conn = new EmConnection() { Id = Return.Id, LocalAddress = Return.Address, Name = Return.Name, Url = Return.Address } });
                         }
                     }

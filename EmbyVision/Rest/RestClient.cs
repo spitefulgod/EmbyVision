@@ -148,7 +148,7 @@ namespace EmbyVision.Rest
 
                 if (result.Response.Trim().IndexOf("{") == 0 || result.Response.Trim().IndexOf("[") == 0)
                 {
-                    resultObject.Response = (T)JsonConvert.DeserializeObject(result.Response, typeof(T));
+                    resultObject.Response = (T)JsonConvert.DeserializeObject(result.Response, typeof(T), new JsonSerializerSettings { DateTimeZoneHandling = DateTimeZoneHandling.Local });
                 }
                 else
                 {
@@ -179,7 +179,7 @@ namespace EmbyVision.Rest
 
         public T Deserialise<T>(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings { DateTimeZoneHandling = DateTimeZoneHandling.Local });
         }
         /// <summary>
         /// Executes the given Uri with parameters provided
@@ -239,7 +239,7 @@ namespace EmbyVision.Rest
                             break;
                     }
                 });
-                if (Response.StatusCode == HttpStatusCode.OK)
+                if (Response.StatusCode == HttpStatusCode.OK || (Response.ResponseStatus == RestSharp.ResponseStatus.Completed && Response.StatusCode == HttpStatusCode.NoContent))
                 {
                     result = new RestResult() { Success = true, Response = Response.Content, Cookies = (List<RestSharp.RestResponseCookie>)Response.Cookies };
                 }
