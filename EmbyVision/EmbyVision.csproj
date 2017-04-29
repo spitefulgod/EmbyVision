@@ -61,6 +61,7 @@
     <Compile Include="Emby\Classes\EmCatalogList.cs" />
     <Compile Include="Emby\Classes\EmChapter.cs" />
     <Compile Include="Emby\Classes\EmClient.cs" />
+    <Compile Include="Emby\Classes\EmCommandArgs.cs" />
     <Compile Include="Emby\Classes\EmConfiguration.cs" />
     <Compile Include="Emby\Classes\EmConnection.cs" />
     <Compile Include="Emby\Classes\EmConnectResult.cs" />

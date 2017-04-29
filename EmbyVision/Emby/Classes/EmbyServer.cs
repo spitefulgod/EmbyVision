@@ -119,10 +119,17 @@ namespace EmbyVision.Emby.Classes
                 {
                     // Add the server to these classes so they can perform ops
                     EmClient.Server = this;
-                    // Check for an appropriate client to use
-                    if (EmClient.SupportsRemoteControl && (SelectedClient == null || EmClient.SupportedCommands.Count > SelectedClient.SupportedCommands.Count || (EmClient.PlayableMediaTypes.Contains("Video") && !SelectedClient.PlayableMediaTypes.Contains("Video"))))
+                    // Check for an appropriate client to use (if we're not forceing client locks)
+                    if(SelectedClient == null && !(Options.Instance.ForcePrevClient && !string.IsNullOrEmpty(Options.Instance.ConnectedClientId)))
+                        if (EmClient.SupportsRemoteControl && (SelectedClient == null || EmClient.SupportedCommands.Count > SelectedClient.SupportedCommands.Count || (EmClient.PlayableMediaTypes.Contains("Video") && !SelectedClient.PlayableMediaTypes.Contains("Video"))))
+                            SelectedClient = EmClient;
+                    // Attach to previous client?
+                    if (EmClient.DeviceId == Options.Instance.ConnectedClientId)
                         SelectedClient = EmClient;
                 }
+                // Save it.
+                Options.Instance.ConnectedClientId = SelectedClient == null ? (Options.Instance.ForcePrevClient ? Options.Instance.ConnectedClientId : null) : SelectedClient.DeviceId;
+                Options.Instance.SaveOptions();
 
                 // Exit if we can't find a usable entry.
                 if (SelectedClient == null)
@@ -164,6 +171,8 @@ namespace EmbyVision.Emby.Classes
                     if (Client.Id == NewClient.Id)
                     {
                         SelectedClient = NewClient;
+                        Options.Instance.ConnectedClientId = SelectedClient.DeviceId;
+                        Options.Instance.SaveOptions();
                         return true;
                     }
             return false;
@@ -280,8 +289,9 @@ namespace EmbyVision.Emby.Classes
         /// </summary>
         /// <param name="Item"></param>
         /// <returns></returns>
-        public RestResult PlayFile(EmMediaItem Item)
+        public async Task<RestResult> PlayFile(EmMediaItem Item, bool Resume)
         {
+            await Item.Refresh(this);
             // Get information regardin this item, we can then figure if we need to resume or not
             /* using (RestClient Client = GetClient())
              {
@@ -296,9 +306,9 @@ namespace EmbyVision.Emby.Classes
             using (RestClient Client = Conn.GetClient(SelectedUser))
             {
                 Client.AddQueryParameter("ItemIds", Item.Id, RestClient.ParameterType.Query);
-                Client.AddQueryParameter("StartPositionTicks", "0", RestClient.ParameterType.Query);
+                Client.AddQueryParameter("StartPositionTicks", Resume && Item.UserData != null && Item.UserData.PlaybackPositionTicks > 0 && Item.UserData.PlaybackPositionTicks < Item.RunTimeTicks ? Item.UserData.PlaybackPositionTicks.ToString() : "0", RestClient.ParameterType.Query);
                 Client.AddQueryParameter("PlayCommand", "PlayNow", RestClient.ParameterType.Query);
-                return Client.Execute(string.Format("Sessions/{0}/Playing", SelectedClient.Id), RestClient.PostType.POST);
+                return await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing", SelectedClient.Id), RestClient.PostType.POST);
             }
         }
         /// <summary>

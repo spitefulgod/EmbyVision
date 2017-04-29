@@ -1,7 +1,9 @@
-﻿using EmbyVision.Rest;
+﻿using EmbyVision.Emby.Classes;
+using EmbyVision.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -118,6 +120,40 @@ namespace EmbyVision.Base
                 default:
                     return number.ToString() + "th";
             }
+        }
+        /// <summary>
+        /// Updates a list of media items.
+        /// </summary>
+        /// <param name="Items"></param>
+        /// <returns></returns>
+        public static async Task<RestResult> UpdateMediaItems(EmbyServer Server, EmSeries Series)
+        {
+            // Get the full episode list
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
+            {
+                RestResult<EmCatalogList> Items = await Client.ExecuteAsync<EmCatalogList>(string.Format("Users/{0}/Items?Recursive=true&IncludeItemTypes=Episode&Fields=UserData", Server.SelectedUser.Id), PostType.GET);
+                foreach(EmSeason Season in Series.Seasons)
+                    foreach(EmMediaItem Episode in Season.Episodes)
+                    {
+                        EmMediaItem Item = Items.Response.Items.Find(x=>x.Id == Episode.Id);
+                        if (Item != null)
+                            CopyObject(Item, Episode);
+                    }
+            }
+            return new RestResult() { Success = true };
+        }
+        /// <summary>
+        /// Copies the properties of an object
+        /// </summary>
+        /// <param name="Source"></param>
+        /// <param name="Destination"></param>
+        public static void CopyObject(object Source, object Destination, List<string> DontCopy = null)
+        {
+            FieldInfo[] myObjectFields = Destination.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            foreach (FieldInfo fi in myObjectFields)
+                if(DontCopy == null || !DontCopy.Contains(fi.Name))
+                    fi.SetValue(Destination, fi.GetValue(Source));
         }
     }
 }

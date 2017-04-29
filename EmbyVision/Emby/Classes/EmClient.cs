@@ -3,6 +3,7 @@ using EmbyVision.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using static EmbyVision.Rest.RestClient;
 
 namespace EmbyVision.Emby.Classes
@@ -176,6 +177,22 @@ namespace EmbyVision.Emby.Classes
                 return Result;
             }
         }
+        public RestResultBase SetPosition(long Position, bool RefreshClient = true)
+        {
+            if (RefreshClient)
+            {
+                RestResult<EmClient> CurrentClient = Refresh();
+                if (!CurrentClient.Success || CurrentClient.Response == null)
+                    return CurrentClient;
+            }
+            if (this.NowPlayingItem == null)
+                return new RestResultBase() { Error = "No item currently playing", Success = false };
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
+            {
+                RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Seek?SeekPositionTicks={1}", this.Id, Position), PostType.POST);
+                return Result;
+            }
+        }
         /// <summary>
         /// Show content on the client (if supported)
         /// </summary>
@@ -185,41 +202,37 @@ namespace EmbyVision.Emby.Classes
         {
             if (!Server.SelectedClient.SupportedCommands.Contains("DisplayContent"))
                 return new RestResult() { Error = "Current client does not support content display", Success = false };
-            /*
-            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
-            {
-                Client.SetContent(new EmCommandArgs() { Arguments = new EmDisplayMedia() { ItemId = Item.Seasons[0].Episodes[0].Id } });
-                RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
-                return Result;
-            }
-            */
-            return new RestResult() { Success = true};
+            return new RestResultBase() { Success = true };
+            /*   using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
+               {
+                   Client.SetContent(new EmCommandArgs() { Arguments = new EmCommandArgs.DisplayMessage() { Header = "YEAH", Text = "This is test", TimeoutMs = 10000 } });
+                   RestClient.RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Command/DisplayMessage", this.Id), RestClient.PostType.POST);
+                   return Result;
+               }*/
         }
         public RestResultBase ShowContent(EmSeason Item)
         {
             if (!Server.SelectedClient.SupportedCommands.Contains("DisplayContent"))
                 return new RestClient.RestResult() { Error = "Current client does not support content display", Success = false };
-
-            /*  using (RestClient Client = Server.GetClient(Server.SelectedUser))
+            return new RestResultBase() { Success = true };
+            /*  using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
               {
                   Client.AddQueryParameter("ItemId", Item.Episodes[0].Id, RestClient.ParameterType.Query);
-                  RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
+                  RestClient.RestResult Result =await Client.ExecuteAsync(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
                   return Result;
               }*/
-            return new RestResult() { Success = true };
         }
         public RestResultBase ShowContent(EmMediaItem Item)
         {
             if (!Server.SelectedClient.SupportedCommands.Contains("DisplayContent"))
                 return new RestClient.RestResult() { Error = "Current client does not support content display", Success = false };
-
-            /* using (RestClient Client = Server.GetClient(Server.SelectedUser))
+            return new RestResultBase() { Success = true };
+            /* using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
              {
                  Client.AddQueryParameter("ItemId", Item.Id.ToString(), RestClient.ParameterType.Query);
-                 RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
+                 RestClient.RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Command/DisplayContent", this.Id), RestClient.PostType.POST);
                  return Result;
              }*/
-            return new RestResult() { Success = true };
         }
     }
 }

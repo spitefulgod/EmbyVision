@@ -17,6 +17,7 @@ namespace EmbyVision.Emby
         {
             public EmSeries SelectedSeries { get; set; }
             public EmSeason SelectedSeason { get; set; }
+            public EmMediaItem SelectedEpisode { get; set; }
             public void Clear()
             {
                 SelectedSeason = null;
@@ -48,7 +49,7 @@ namespace EmbyVision.Emby
         /// <summary>
         /// Received a speech command, check its for us and the action it.
         /// </summary>
-        private void Listener_SpeechRecognised(object sender, string Assembly, string Context, string SpokenCommand, int CommandIndex, Dictionary<string, object> SelectList)
+        private async void Listener_SpeechRecognised(object sender, string Assembly, string Context, string SpokenCommand, int CommandIndex, Dictionary<string, object> SelectList)
         {
             if (Assembly != "EmbyBase" && Assembly != "Emby")
                 return;
@@ -139,8 +140,13 @@ namespace EmbyVision.Emby
                     }
                     Talker.Stop();
                     EmbyServer CurrentServer = SelectedServer;
+                    Options.Instance.ConnectedClientId = null;
+                    Options.Instance.SaveOptions();
                     if(!ConnectToServer(NewServer, true).Success) { 
-                        Talker.Speak(string.Format("Unable to connect to the server {0}, will attempt reconnection to {1}", NewServer.ServerName, CurrentServer.ServerName));
+                        if(CurrentServer == null)
+                            Talker.Speak(string.Format("Unable to connect to the server {0}", NewServer.ServerName));
+                        else
+                            Talker.Speak(string.Format("Unable to connect to the server {0}, will attempt reconnection to {1}", NewServer.ServerName, CurrentServer.ServerName));
                         ConnectToServer(CurrentServer, true);
                     }
                     break;
@@ -156,9 +162,9 @@ namespace EmbyVision.Emby
                             Talker.Speak(string.Format("Switching to channel {0}", PlayItem.Name));
                             break;
                     }
-                    RestResult PlayResult = SelectedServer.PlayFile(PlayItem);
-                    if (!PlayResult.Success)
-                        Talker.Queue(string.Format("Unable to play the specified item, {0}", PlayResult.Error));
+                    RestResult PlayResult = await SelectedServer.PlayFile(PlayItem, true);
+                    // Additional information on what is left
+                    Talker.Queue(GetStartEnd(PlayItem));
                     Store.Clear();
                     break;
                 case "Pause":
@@ -258,7 +264,7 @@ namespace EmbyVision.Emby
                         break;
                     }
                     EmMediaItem PIWatchingItem = SelectedServer.SelectedClient.NowPlayingItem;
-                    PIWatchingItem.Refresh(this.SelectedServer);
+                    await PIWatchingItem.Refresh(this.SelectedServer);
                     // Overview of current playing things.
                     Talker.Stop();
                     ListAdditionalInfo(PIWatchingItem, 2);
@@ -281,7 +287,7 @@ namespace EmbyVision.Emby
                         break;
                     }
                     EmMediaItem NWWatchingItem = SelectedServer.SelectedClient.NowPlayingItem;
-                    NWWatchingItem.Refresh(this.SelectedServer);
+                    await NWWatchingItem.Refresh(this.SelectedServer);
                     bool StateEnd = false;
                     switch (NWWatchingItem.Type)
                     {
@@ -408,29 +414,111 @@ namespace EmbyVision.Emby
                         Talker.Speak("You have not selected an episode, try saying List Episodes");
                         break;
                     }
-                    EmMediaItem SelectedEpisode = null;
+                    Store.SelectedEpisode = null;
                     // Make sure the episode exists
                     foreach (EmMediaItem Episode in Store.SelectedSeason.Episodes)
                         if (Episode.IndexNumber == EpEpisode)
                         {
-                            SelectedEpisode = Episode;
+                            Store.SelectedEpisode = Episode;
                             break;
                         }
-                    if (SelectedEpisode == null)
+                    if (Store.SelectedEpisode == null)
                     {
                         Talker.Speak(string.Format("Episode {0} for {1} Season {2} does not exist", EpEpisode, Store.SelectedSeason.Index, Store.SelectedSeries.Name));
                         break;
                     }
-                    RestResult TVPlayResult = SelectedServer.PlayFile(SelectedEpisode);
-                    if (!TVPlayResult.Success)
-                        Talker.Queue(string.Format("Unable to play the specified item, {0}", TVPlayResult.Error));
-                    else
+                    PlayEpisode();
+                    break;
+                case "ContinueTVShow":
+                    if (SelectList != null && !SelectList.ContainsKey("TVShow"))
+                        break;
+                    // We have a series, we should go through it and see the last watchde episode then start from there, unfortunately this means updating all the shows so we can get the last watched data.
+                    Store.SelectedSeries = (EmSeries)SelectList["TVShow"];
+                    // Update these items.
+                    await Common.UpdateMediaItems(SelectedServer, Store.SelectedSeries);
+                    // Now we need to get the last moved item, then play from there.
+                    Store.SelectedEpisode = Store.SelectedSeries.Seasons[0].Episodes[0];
+                    Store.SelectedSeason = Store.SelectedSeries.Seasons[0];
+                    DateTime LastEpDate = DateTime.MinValue;
+                    foreach (EmSeason Season in Store.SelectedSeries.Seasons)
+                        foreach(EmMediaItem Episode in Season.Episodes)
+                            if(Episode.UserData != null && Episode.UserData.LastPlayedDate != null && Episode.UserData.LastPlayedDate > LastEpDate)
+                            {
+                                LastEpDate = (DateTime)Episode.UserData.LastPlayedDate;
+                                Store.SelectedEpisode = Episode;
+                                Store.SelectedSeason = Season;
+                            }
+                    if (Store.SelectedEpisode != null)
+                        PlayEpisode();
+                    break;
+                case "Restart":
+                    // Restarts the current media item
+                    SelectedServer.SelectedClient.Refresh();
+                    if (SelectedServer.SelectedClient.NowPlayingItem == null)
                     {
-                        Talker.Speak(string.Format("Playing season {0} episode {1} of {2}", Store.SelectedSeason.Index, SelectedEpisode.IndexNumber, Store.SelectedSeries.Name));
-                        Store.Clear();
+                        Talker.Speak("You are not currently watching any media");
+                        break;
                     }
+                    if(SelectedServer.SelectedClient.NowPlayingItem.Type == "TvChannel")
+                    {
+                        Talker.Speak("You cannot restart Live TV programs");
+                        break;
+                    }
+                    // Send the command to restart the current media
+                    RestResultBase RestartResult = SelectedServer.SelectedClient.SetPosition(0, false);
+                    if (RestartResult.Success)
+                        Talker.Speak("Restart");
+                    else
+                        Talker.Speak(string.Format("Unable to restart the current item {0}", RestartResult.Error));
+                    
                     break;
             }
+        }
+        /// <summary>
+        /// Plays the episode.
+        /// </summary>
+        /// <param name="Episode"></param>
+        public async void PlayEpisode()
+        {
+            RestResult TVPlayResult = await SelectedServer.PlayFile(Store.SelectedEpisode, true);
+            if (!TVPlayResult.Success)
+                Talker.Queue(string.Format("Unable to play the specified item, {0}", TVPlayResult.Error));
+            else
+                Talker.Speak(string.Format("Playing season {0} episode {1} of {2} {3}", Store.SelectedSeason.Index, Store.SelectedEpisode.IndexNumber, Store.SelectedSeries.Name, GetStartEnd(Store.SelectedEpisode)));
+        }
+        /// <summary>
+        /// Gets the start / end position of a media item
+        /// </summary>
+        /// <param name="Item"></param>
+        /// <returns></returns>
+        private string GetStartEnd(EmMediaItem Item)
+        {
+            string EpPlayState = "";
+            if(Item.UserData != null && Item.UserData.PlaybackPositionTicks > 0)
+                EpPlayState += string.Format("starting from {0}", GetPositionTime(Item.UserData.PlaybackPositionTicks));
+            TimeSpan Left = TimeSpan.FromTicks(Item.RunTimeTicks) - (Item.UserData == null ? TimeSpan.FromSeconds(0) : TimeSpan.FromTicks(Item.UserData.PlaybackPositionTicks));
+            EpPlayState += GetPositionTime(Left.Ticks, " there is", "remaining");
+            return EpPlayState;
+        }
+        /// <summary>
+        /// returns as speech entry for a tick time
+        /// </summary>
+        /// <param name="Ticks"></param>
+        private string GetPositionTime(long Ticks, string Prefix = null, string Suffix = null)
+        {
+            string Return = "";
+            TimeSpan Length = TimeSpan.FromTicks(Ticks);
+            if (Length.Hours > 0) {
+                Return += string.Format("{0} hour{1} ", Length.Hours, Length.Hours > 1 ? "s" : "");
+                Length.Add(new TimeSpan(-Length.Hours, 0, 0));
+            }
+            if (Length.Minutes > 0)
+            {
+                Return += string.Format("{0} minute{1}", Length.Minutes, Length.Minutes > 1 ? "s" : "");
+                Length.Add(new TimeSpan(0, -Length.Minutes, 0));
+            }
+
+            return (Return != "" && !string.IsNullOrEmpty(Prefix) ? Prefix + " " : "") + Return + (Return != "" && !string.IsNullOrEmpty(Suffix) ? " " + Suffix : "");
         }
         /// <summary>
         /// Sets default commands and any media content commands from the selected server.
@@ -477,6 +565,7 @@ namespace EmbyVision.Emby
                 new SpeechContextItem("Computer", "Server"),
                 new SpeechContextItem("Computers", "Server")
             };
+            List<string> PlayCommands = new List<string>(new string[] { "Play", "Watch", "Start", "Continue", "Resume" });
             List<string> Clients = new List<string>(new string[] { "Client", "Clients", "Software Clients", "Software Client" });
             List<SpeechContextItem> All = new List<SpeechContextItem>();
             All.AddRange(Movie);
@@ -615,20 +704,23 @@ namespace EmbyVision.Emby
                     Commands = new List<SpeechItem>()
                     {
                         new SpeechItem(
-                                new CommandList("Play","Watch","Start"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new OptionalCommandList("the"),
                                 new SelectCommandList("Type", false, Movie),
                                 new OptionalCommandList("number"),
                                 new SelectCommandList("PlayItem", true, SelectedServer.Movies, "Name")
                             ),
                         new SpeechItem(
-                                new CommandList("Play","Watch","Start"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new OptionalCommandList("the"),
                                 new SelectCommandList("Type", false, Channels),
                                 new SelectCommandList("PlayItem", true, SelectedServer.TVChannels, "Name")
                             ),
                         new SpeechItem(
-                                new CommandList("Play","Watch","Start"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new OptionalCommandList("the"),
                                 new SelectCommandList("Type", false, Channels),
                                 new CommandList("number"),
@@ -707,6 +799,21 @@ namespace EmbyVision.Emby
                                 new CommandList("Go to", "Show", "Select"),
                                 new OptionalCommandList("Season"),
                                 new SelectCommandList("Season", false, Common.NumberList(1, 20))
+                            ),
+                        new SpeechItem(
+                                new CommandList("Go to", "Show", "Select"),
+                                new OptionalCommandList("Season"),
+                                new SelectCommandList("Season", false, Common.NumberList(1, 20)),
+                                new CommandList("of"),
+                                new OptionalCommandList(TV),
+                                new SelectCommandList("TVShow",true,SelectedServer.TVShows,"Name")
+                            ),
+                        new SpeechItem(
+                                new CommandList("Go to", "Show", "Select"),
+                                new OptionalCommandList(TV),
+                                new SelectCommandList("TVShow",true,SelectedServer.TVShows,"Name"),
+                                new OptionalCommandList("Season"),
+                                new SelectCommandList("Season", false, Common.NumberList(1, 20))
                             )
                     }
                 });
@@ -742,6 +849,29 @@ namespace EmbyVision.Emby
                             new OptionalCommandList("the"),
                             new CommandList(Clients),
                             new SelectCommandList("Client", true, SelectedServer.Clients, "Client")
+                        )
+                    }
+                });
+                Commands.Add(new VoiceCommand()
+                {
+                    Name = "Restart",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList("Restart", "Start"),
+                            new OptionalCommandList("the"),
+                            new OptionalCommandList("current"),
+                            new CommandList(All),
+                            new OptionalCommandList("from the begining")
+                        ),
+                        new SpeechItem(
+                            new CommandList("Go to", "Restart", "Start"),
+                            new OptionalCommandList("from"),
+                            new OptionalCommandList("the"),
+                            new CommandList("begining", "start"), 
+                            new OptionalCommandList("of", "of the"),
+                            new OptionalCommandList("current"),
+                            new OptionalCommandList(All)
                         )
                     }
                 });
@@ -809,12 +939,14 @@ namespace EmbyVision.Emby
                     Commands = new List<SpeechItem>()
                     {
                         new SpeechItem(
-                                new CommandList("Play", "Watch"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new CommandList("episode"),
                                 new SelectCommandList("Episode", false, Common.NumberList(1, 100))
                             ),
                         new SpeechItem(
-                                new CommandList("Play", "Watch"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new CommandList("episode"),
                                 new SelectCommandList("Episode", false, Common.NumberList(1, 100)),
                                 new OptionalCommandList("for", "of"),
@@ -822,14 +954,16 @@ namespace EmbyVision.Emby
                                 new SelectCommandList("Season", false, Common.NumberList(1, 20))
                             ),
                         new SpeechItem(
-                                new CommandList("Play", "Watch"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new CommandList("season"),
                                 new SelectCommandList("Season", false, Common.NumberList(1, 20)),
                                 new CommandList("episode"),
                                 new SelectCommandList("Episode", false, Common.NumberList(1, 100))
                             ),
                          new SpeechItem(
-                                new CommandList("Play", "Watch"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new CommandList("episode"),
                                 new SelectCommandList("Episode", false, Common.NumberList(1, 100)),
                                 new OptionalCommandList("for", "of"),
@@ -841,7 +975,8 @@ namespace EmbyVision.Emby
                                 new SelectCommandList("TVShow",true,SelectedServer.TVShows,"Name")
                             ),
                         new SpeechItem(
-                                new CommandList("Play", "Watch"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new OptionalCommandList("the"),
                                 new OptionalCommandList(TV),
                                 new SelectCommandList("TVShow",true,SelectedServer.TVShows,"Name"),
@@ -851,7 +986,8 @@ namespace EmbyVision.Emby
                                 new SelectCommandList("Episode", false, Common.NumberList(1, 100))
                             ),
                          new SpeechItem(
-                                new CommandList("Play", "Watch"),
+                                new CommandList(PlayCommands),
+                                new OptionalCommandList("viewing", "watching"),
                                 new CommandList("season"),
                                 new SelectCommandList("Season", false, Common.NumberList(1, 20)),
                                 new CommandList("episode"),
@@ -863,6 +999,21 @@ namespace EmbyVision.Emby
                             )
                     }
                 });
+                Commands.Add(new VoiceCommand()
+                {
+                    Name = "ContinueTVShow",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList(PlayCommands),
+                            new OptionalCommandList("viewing", "watching"),
+                            new OptionalCommandList("the"),
+                            new CommandList(TV),
+                            new SelectCommandList("TVShow",true,SelectedServer.TVShows,"Name")
+                        )
+                    }
+                });
+                
             }
             Listener.CreateGrammarList("Emby", Commands);
         }
@@ -950,6 +1101,11 @@ namespace EmbyVision.Emby
         public RestResult ConnectToServer(EmbyServer Server, bool Speak = false)
         {
             Store.Clear();
+            if (Server == null)
+            {
+                Logger.Log("Ignoring connection attempt to invalid server");
+                return new RestResult() { Success = false };
+            }
             Logger.Log("Emby", string.Format("Attempting connection to the server {0}", Server.ServerName));
             if(Speak)
                 Talker.Queue(string.Format("Connecting to the server {0}", Server.ServerName));

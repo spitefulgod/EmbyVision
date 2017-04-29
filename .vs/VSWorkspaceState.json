@@ -2,9 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\EmbyVision",
-    "\\EmbyVision\\Emby",
     "\\EmbyVision\\Emby\\Classes"
   ],
-  "SelectedNode": "\\EmbyVision\\Emby\\EmbyConnector.cs",
+  "SelectedNode": "\\EmbyVision\\bin",
   "PreviewInSolutionExplorer": false
 }

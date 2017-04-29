@@ -211,9 +211,9 @@ namespace EmbyVision.Rest
                     if (this.Content != null && this.Content.ToString() != "")
                     {
                         //  Request.AddHeader("Accept", "application/json");
-                        Request.AddParameter("application/json", JsonConvert.SerializeObject(this.Content), RestSharp.ParameterType.RequestBody);
+                        //Request.AddParameter("application/json", JsonConvert.SerializeObject(this.Content), RestSharp.ParameterType.RequestBody);
                         //Request.RequestFormat = RestSharp.DataFormat.Json;
-                        //Request.AddJsonBody(this.Content);
+                        Request.AddJsonBody(this.Content);
                         //Request.AddParameter("application/json", this.Content.ToString(), RestSharp.ParameterType.RequestBody);
                     }
                     RestSharp.RestClient Client = new RestSharp.RestClient(ConstructUri(Function));

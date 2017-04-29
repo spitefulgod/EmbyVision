@@ -43,11 +43,11 @@ namespace EmbyVision.Speech
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// 
-        private void Synthesizer_SpeakCompleted(object sender, SpeakCompletedEventArgs e)
+        private async void Synthesizer_SpeakCompleted(object sender, SpeakCompletedEventArgs e)
         {
             Processing = false;
             if (!e.Cancelled && StoredSpeech != null && StoredSpeech.Count > 0)
-                SpeakNext();
+                await SpeakNext();
             else
                 Stop();
         }
@@ -249,7 +249,7 @@ namespace EmbyVision.Speech
         /// Speaks the given speech entry
         /// </summary>
         /// <param name="Speech"></param>
-        public void Queue(IEnumerable<string> Speech)
+        public async void Queue(IEnumerable<string> Speech)
         {
             bool Found = false;
             foreach (string SpeechItem in Speech)
@@ -271,11 +271,11 @@ namespace EmbyVision.Speech
                 try
                 {
                     if (!Processing)
-                        SpeakNext();
+                        await SpeakNext();
                 }
                 catch (Exception)
                 {
-                    SpeakNext();
+                    await SpeakNext();
                 }
             }
         /// <summary>

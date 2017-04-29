@@ -15,6 +15,11 @@ namespace EmbyVision
             Console.WriteLine("{0} Version {1}", Options.Instance.Client, Options.Instance.Version);
             Console.WriteLine("Emby media server connection client for the blind and visually impaired");
             Console.WriteLine("");
+            if(Options.Instance.StartDelay > 0)
+            {
+                Console.WriteLine("Waiting {0} seconds", Options.Instance.StartDelay);
+                Thread.Sleep(Options.Instance.StartDelay * 1000);
+            }
             // Get some generic objects on.
             Talker Talker = new Talker();
             Listener Listener = new Listener();

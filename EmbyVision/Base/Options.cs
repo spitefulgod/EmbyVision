@@ -13,14 +13,16 @@ namespace EmbyVision.Base
     public class Options
     {
         private string FileName = "settings.json";
+        public int StartDelay { get; set; }
         public string ConnectUsername { get; set; }
         public string ConnectPassword { get; set; }
         public string BasicUsername { get; set; }
         public string BasicPassword { get; set; }
-        public string DefaultClient { get; set; }
         public string ConnectedId { get; set; }
+        public string ConnectedClientId { get; set; }
         public string DeviceId { get; set; }
         public bool ForcePrevServer { get; set; }
+        public bool ForcePrevClient { get; set; }
         [JsonIgnore]
         public string ExternalIPAddr { get; set; }
         [JsonIgnore]

@@ -1,8 +1,10 @@
-﻿using EmbyVision.Rest;
+﻿using EmbyVision.Base;
+using EmbyVision.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using static EmbyVision.Rest.RestClient;
 
 namespace EmbyVision.Emby.Classes
@@ -75,7 +77,7 @@ namespace EmbyVision.Emby.Classes
         public DateTime EndDate { get; set; }
 
         // Refreshes all our details, we need a server object to get the client.
-        public RestResult<EmMediaItem> Refresh(EmbyServer Server)
+        public async Task<RestResult<EmMediaItem>> Refresh(EmbyServer Server)
         {
             if (Server == null || Server.SelectedUser == null)
                 return new RestResult<EmMediaItem>() { Success = false, Error = "Server object not initialised" };
@@ -85,16 +87,17 @@ namespace EmbyVision.Emby.Classes
 
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
-                RestResult<EmMediaItem> Result = Client.Execute<EmMediaItem>(string.Format("Users/{0}/Items/{1}", Server.SelectedUser.Id, this.Id), RestClient.PostType.GET);
+                RestResult<EmMediaItem> Result = await Client.ExecuteAsync<EmMediaItem>(string.Format("Users/{0}/Items/{1}", Server.SelectedUser.Id, this.Id), RestClient.PostType.GET);
                 if (Result.Success && Result.Response != null)
                 {
-                    FieldInfo[] myObjectFields = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                    foreach (FieldInfo fi in myObjectFields)
-                        fi.SetValue(this, fi.GetValue(Result.Response));
+                    Common.CopyObject(Result.Response, this);
                 }
                 return Result;
             }
+        }
+        public void RefreshItem(EmMediaItem Item)
+        {
+            Common.CopyObject(Item, this);
         }
         public int CompareTo(EmMediaItem other)
         {
