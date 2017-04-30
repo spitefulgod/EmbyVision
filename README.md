@@ -12,11 +12,11 @@ Type Help at the command prompt for a list of basic admin commands
 EnableEmbyBasic [Username] [Password] will allow you to specify a username and password to connect to LAN machines
 e.g. EnableEmbyBasic Spitefulgod MyPassword
 
-
 EnableEmbyConnect [Username] [Password] will allow you to authenticate with Emby Connect giving you access to servers on that account
 e.g. EnableEmbyConnect Spitefulgod MyPassword
 
 The system will remember the last connected server and attempt to connect to that server first, if emby connect is unavailable the system will fallback to LAN servers
+
 
 For the software to work a client must be available to a server, by default the software will connect to the client with the most supported commands and remote control access.  On my system the client starts automatically at startup along with the software.
 
@@ -42,6 +42,8 @@ List [Movies | TV Shows | TV Channels]
 
 Watch Movie [Movie name or number | TV Channel name or number]
 
+Watch TV Show [TV Series] 
+
 Watch [TV Series] Season [Season Number] Episode [Episode Number]
 
 Go to TV Show [TV Series]
@@ -53,6 +55,8 @@ Go to Season [Season number]
 List Episodes
 
 Watch Episode [Episode number]
+
+Restart from the begining
 
 How many audio channels are available
 
@@ -68,6 +72,8 @@ Watch Box Set Lost Season 1 Episode 2,
 Watch Season 1 Episode 3 of Lost
 
 Watch Episode 2 Season 2 of Lost
+
+Continue watching a touch of frost
 
 Watch movie Contact
 
