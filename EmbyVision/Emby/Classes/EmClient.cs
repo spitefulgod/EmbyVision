@@ -33,13 +33,13 @@ namespace EmbyVision.Emby.Classes
         /// Refresh the current client, mainly for the playing state, this could probably be simplified on the copying of the fields.
         /// </summary>
         /// <returns></returns>
-        public RestResult<EmClient> Refresh()
+        public async Task<RestResult<EmClient>> Refresh()
         {
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 Logger.Log("Emby Client", "Refreshing client information");
                 Client.AddQueryParameter("DeviceId", this.DeviceId, RestClient.ParameterType.Query);
-                RestResult<List<EmClient>> Result = Client.Execute<List<EmClient>>("Sessions", PostType.GET);
+                RestResult<List<EmClient>> Result = await Client.ExecuteAsync<List<EmClient>>("Sessions", PostType.GET);
                 if (!Result.Success || Result.Response == null || Result.Response.Count == 0)
                 {
                     Logger.Log("Emby Client", "Unable to retrieve client information");
@@ -49,20 +49,8 @@ namespace EmbyVision.Emby.Classes
                 EmClient EmClient = Result.Response[0];
                 if (EmClient.Id == this.Id)
                 {
-                    this.ApplicationVersion = EmClient.ApplicationVersion;
-                    this.Client = EmClient.Client;
-                    this.DeviceId = EmClient.DeviceId;
-                    this.DeviceName = EmClient.DeviceName;
-                    this.Id = EmClient.Id;
-                    this.LastActivityDate = EmClient.LastActivityDate;
-                    this.NowPlayingItem = EmClient.NowPlayingItem;
-                    this.PlayableMediaTypes = EmClient.PlayableMediaTypes;
-                    this.PlayState = EmClient.PlayState;
-                    this.QueueableMediaTypes = EmClient.QueueableMediaTypes;
-                    this.SupportedCommands = EmClient.SupportedCommands;
-                    this.SupportsRemoteControl = EmClient.SupportsRemoteControl;
-                    this.UserId = EmClient.UserId;
-                    this.UserName = EmClient.UserName;
+                    EmClient.Server = Server;
+                    Common.CopyObject(EmClient, this, new string[] {"Server"});
                     return new RestResult<EmClient>(Result) { Response = EmClient };
                 }
                 return new RestResult<EmClient>() { Success = false, Error = "Unable to find matching client to refresh" };
@@ -74,7 +62,7 @@ namespace EmbyVision.Emby.Classes
         /// <param name="TrackNumber"></param>
         /// <param name="RefreshClient"></param>
         /// <returns></returns>
-        public RestClient.RestResult<EmMediaStream> SwitchAudioChannel(int TrackNumber, bool RefreshClient = true)
+        public async Task<RestClient.RestResult<EmMediaStream>> SwitchAudioChannel(int TrackNumber, bool RefreshClient = true)
         {
             // check the client supports these channel switching
             if (!Server.SelectedClient.SupportedCommands.Contains("SetAudioStreamIndex"))
@@ -83,7 +71,7 @@ namespace EmbyVision.Emby.Classes
             // refesh the now playing item
             if (RefreshClient)
             {
-                RestClient.RestResult<EmClient> CurrentClient = Refresh();
+                RestClient.RestResult<EmClient> CurrentClient = await Refresh();
                 if (!CurrentClient.Success || CurrentClient.Response == null)
                     return new RestClient.RestResult<EmMediaStream>(CurrentClient);
             }
@@ -108,7 +96,7 @@ namespace EmbyVision.Emby.Classes
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 Client.AddQueryParameter("Index", FoundStream.Index.ToString(), RestClient.ParameterType.Query);
-                RestClient.RestResult Result = Client.Execute(string.Format("Sessions/{0}/Command/SetAudioStreamIndex", this.Id), RestClient.PostType.POST);
+                RestClient.RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Command/SetAudioStreamIndex", this.Id), RestClient.PostType.POST);
                 return new RestClient.RestResult<EmMediaStream>(Result) { Response = FoundStream };
             }
         }
@@ -117,11 +105,11 @@ namespace EmbyVision.Emby.Classes
         /// </summary>
         /// <param name="RefreshClient"></param>
         /// <returns></returns>
-        public RestResultBase Stop(bool RefreshClient = true)
+        public async Task<RestResultBase> Stop(bool RefreshClient = true)
         {
             if (RefreshClient)
             {
-                RestResult<EmClient> CurrentClient = Refresh();
+                RestResult<EmClient> CurrentClient = await Refresh();
                 if (!CurrentClient.Success || CurrentClient.Response == null)
                     return CurrentClient;
             }
@@ -129,7 +117,7 @@ namespace EmbyVision.Emby.Classes
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
-                RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Stop", this.Id), PostType.POST);
+                RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing/Stop", this.Id), PostType.POST);
                 if (Result.Success)
                     this.NowPlayingItem = null;
                 return Result;
@@ -140,11 +128,11 @@ namespace EmbyVision.Emby.Classes
         /// </summary>
         /// <param name="RefreshClient"></param>
         /// <returns></returns>
-        public RestResultBase Pause(bool RefreshClient = true)
+        public async Task<RestResultBase> Pause(bool RefreshClient = true)
         {
             if (RefreshClient)
             {
-                RestResult<EmClient> CurrentClient = Refresh();
+                RestResult<EmClient> CurrentClient = await Refresh();
                 if (!CurrentClient.Success || CurrentClient.Response == null)
                     return CurrentClient;
             }
@@ -152,7 +140,7 @@ namespace EmbyVision.Emby.Classes
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
-                RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Pause", this.Id), PostType.POST);
+                RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing/Pause", this.Id), PostType.POST);
                 return Result;
             }
         }
@@ -161,11 +149,11 @@ namespace EmbyVision.Emby.Classes
         /// </summary>
         /// <param name="RefreshClient"></param>
         /// <returns></returns>
-        public RestResultBase Resume(bool RefreshClient = true)
+        public async Task<RestResultBase> Resume(bool RefreshClient = true)
         {
             if (RefreshClient)
             {
-                RestResult<EmClient> CurrentClient = Refresh();
+                RestResult<EmClient> CurrentClient = await Refresh();
                 if (!CurrentClient.Success || CurrentClient.Response == null)
                     return CurrentClient;
             }
@@ -173,15 +161,21 @@ namespace EmbyVision.Emby.Classes
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
-                RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Unpause", this.Id), PostType.POST);
+                RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing/Unpause", this.Id), PostType.POST);
                 return Result;
             }
         }
-        public RestResultBase SetPosition(long Position, bool RefreshClient = true)
+        /// <summary>
+        /// Sets the position within a file.
+        /// </summary>
+        /// <param name="Position"></param>
+        /// <param name="RefreshClient"></param>
+        /// <returns></returns>
+        public async Task<RestResultBase> SetPosition(long Position, bool RefreshClient = true)
         {
             if (RefreshClient)
             {
-                RestResult<EmClient> CurrentClient = Refresh();
+                RestResult<EmClient> CurrentClient = await Refresh();
                 if (!CurrentClient.Success || CurrentClient.Response == null)
                     return CurrentClient;
             }
@@ -189,7 +183,7 @@ namespace EmbyVision.Emby.Classes
                 return new RestResultBase() { Error = "No item currently playing", Success = false };
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
-                RestResult Result = Client.Execute(string.Format("Sessions/{0}/Playing/Seek?SeekPositionTicks={1}", this.Id, Position), PostType.POST);
+                RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing/Seek?SeekPositionTicks={1}", this.Id, Position), PostType.POST);
                 return Result;
             }
         }

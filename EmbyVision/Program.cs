@@ -29,7 +29,6 @@ namespace EmbyVision
 
             CommandLineCommands Cmd = new CommandLineCommands();
             CommonSpeechCommands CommonSpeech = new CommonSpeechCommands(Talker, Listener);
-            EmbyConnector Emby = new EmbyConnector(Talker, Listener);
 
             CommonSpeech.Start();
             // Get the external IP address, this is used to check for local machines.
@@ -46,18 +45,19 @@ namespace EmbyVision
                     Console.WriteLine(Result.Error);
             }
 
+            EmbyCore Emby = new EmbyCore(Talker, Listener);
             Talker.Speak("Emby Vision, Speech interface");
             CancellationTokenSource TokenSource = new CancellationTokenSource();
             CancellationToken ConnectCancel = TokenSource.Token;
 
             // Connect to the server, whatever information we have will be used.
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 while (Emby != null)
                 {
                     if (TokenSource.IsCancellationRequested)
                         break;
-                    Emby.Start();
+                    await Emby.Start();
                     // Check if we are connected, if not then try again in 30 seconds.
                     if (Emby != null && !Emby.IsConnected)
                         Thread.Sleep(30000);

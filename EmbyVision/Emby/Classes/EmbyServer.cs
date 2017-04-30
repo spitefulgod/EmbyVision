@@ -40,7 +40,7 @@ namespace EmbyVision.Emby.Classes
         /// Connects to the given server, then extracts a list of items on that server.
         /// </summary>
         /// <returns></returns>
-        public RestResult Connect()
+        public async Task<RestResult> Connect()
         {
             ConnectionAttempted = true;
 
@@ -51,7 +51,7 @@ namespace EmbyVision.Emby.Classes
             Logger.Log("Emby Server", string.Format("Attempting connection to the server {0} ({1})", Conn.Name, Conn.IsLocal ? Conn.LocalAddress : Conn.Url));
             using (RestClient Client = new RestClient(Conn.IsLocal ? Conn.LocalAddress : Conn.Url))
             {
-                RestResult<List<EmUser>> Data = Client.Execute<List<EmUser>>("users/public", PostType.GET);
+                RestResult<List<EmUser>> Data = await Client.ExecuteAsync<List<EmUser>>("users/public", PostType.GET);
                 if (!Data.Success || Data.Response == null || Data.Response.Count == 0)
                     return new RestResult() { Success = false, Error = string.Format("There was an error retrieving the server user list, {0}", Data.Success ?  "no users available" : Data.Error) };
                 Users = Data.Response;
@@ -77,7 +77,7 @@ namespace EmbyVision.Emby.Classes
                 Client.AddQueryParameter("Password", Common.HashCodeSha1(SelectedUser.UsablePassword), RestClient.ParameterType.Form);
                 Client.AddQueryParameter("PasswordMd5", Common.HashCodeMd5(SelectedUser.UsablePassword), RestClient.ParameterType.Form);
                 Client.AddQueryParameter("Authorization", SelectedUser.Authorisation, RestClient.ParameterType.Header);
-                RestResult<EmAuthResult> AuthResult = Client.Execute<EmAuthResult>("/Users/AuthenticateByName", RestClient.PostType.POST);
+                RestResult<EmAuthResult> AuthResult = await Client.ExecuteAsync<EmAuthResult>("/Users/AuthenticateByName", RestClient.PostType.POST);
                 if (!AuthResult.Success)
                     return new RestResult() { Success = false, Error = string.Format("Unable to authenticate with the media server, {0}", AuthResult.Error) };
 
@@ -91,7 +91,7 @@ namespace EmbyVision.Emby.Classes
                     Client.ClearParams();
                     Client.AddQueryParameter("X-MediaBrowser-Token", Conn.AccessKey, ParameterType.Header);
                     Client.AddQueryParameter("X-Emby-Authorization", SelectedUser.Authorisation, ParameterType.Header);
-                    RestResult<EmExchToken> ExchangeResult = Client.Execute<EmExchToken>(string.Format("/Connect/Exchange?format=json&ConnectUserId={0}", SelectedUser.ConnectUserId), RestClient.PostType.GET);
+                    RestResult<EmExchToken> ExchangeResult = await Client.ExecuteAsync<EmExchToken>(string.Format("/Connect/Exchange?format=json&ConnectUserId={0}", SelectedUser.ConnectUserId), RestClient.PostType.GET);
                     if(!ExchangeResult.Success)
                         return new RestResult() { Success = false, Error = string.Format("Unable to retrieve exchange token, {0}", ExchangeResult.Error) };
                     SelectedUser.ExchangeToken = ExchangeResult.Response;
@@ -108,7 +108,7 @@ namespace EmbyVision.Emby.Classes
                 Client.ClearParams();
                 Client.AddQueryParameter("X-MediaBrowser-Token", Conn.AccessKey, ParameterType.Header);
                 Client.AddQueryParameter("ControllableByUserId", SelectedUser.UsableId, RestClient.ParameterType.Query);
-                RestResult<List<EmClient>> ClientResult = Client.Execute<List<EmClient>>("Sessions", RestClient.PostType.GET);
+                RestResult<List<EmClient>> ClientResult = await Client.ExecuteAsync<List<EmClient>>("Sessions", RestClient.PostType.GET);
                 if (!ClientResult.Success || ClientResult.Response == null || ClientResult.Response.Count == 0)
                     return new RestResult() { Success = false, Error = string.Format("There was an error retrieving the a list of available client, {0}", ClientResult.Success ? "no clients available" : ClientResult.Error) };
                 Logger.Log("Emby Server", string.Format("{0} connected clients available", ClientResult.Response.Count));
@@ -181,14 +181,14 @@ namespace EmbyVision.Emby.Classes
         /// If we're connected we can go and collect the media info from the server and store it
         /// </summary>
         /// <returns></returns>
-        public RestResult RefreshCatalog()
+        public async Task<RestResult> RefreshCatalog()
         {
             Reset();
             Logger.Log("Emby Server", "Retrieving catalog listings");
             using (RestClient Client = Conn.GetClient(SelectedUser))
             {
                 // Retieve movies
-                RestResult<EmCatalogList> MovieResult = Client.Execute<EmCatalogList>(string.Format("Users/{0}/Items?Recursive=true&IncludeItemTypes=Movie", SelectedUser.Id), RestClient.PostType.GET);
+                RestResult<EmCatalogList> MovieResult = await Client.ExecuteAsync<EmCatalogList>(string.Format("Users/{0}/Items?Recursive=true&IncludeItemTypes=Movie", SelectedUser.Id), RestClient.PostType.GET);
                 if (MovieResult.Success)
                 {
                     MovieResult.Response.Items.Sort();
@@ -202,7 +202,7 @@ namespace EmbyVision.Emby.Classes
                 }
 
                 // now get the infromation for the tv series.
-                RestResult<EmCatalogList> TVSeries = Client.Execute<EmCatalogList>(string.Format("Users/{0}/Items?Recursive=true&IncludeItemTypes=Episode", SelectedUser.Id), RestClient.PostType.GET);
+                RestResult<EmCatalogList> TVSeries = await Client.ExecuteAsync<EmCatalogList>(string.Format("Users/{0}/Items?Recursive=true&IncludeItemTypes=Episode", SelectedUser.Id), RestClient.PostType.GET);
                 if (TVSeries.Success)
                 {
                     TVShows = CreateSeries(TVSeries.Response.Items);
@@ -215,10 +215,10 @@ namespace EmbyVision.Emby.Classes
                 }
 
                 // Retieve TV Channels, first check if it's enabled
-                RestResult<EmTVInfo> TVSettings = Client.Execute<EmTVInfo>("LiveTv/Info", RestClient.PostType.GET);
+                RestResult<EmTVInfo> TVSettings = await Client.ExecuteAsync<EmTVInfo>("LiveTv/Info", RestClient.PostType.GET);
                 if (TVSettings.Success && TVSettings.Response.IsEnabled)
                 {
-                    RestClient.RestResult<EmCatalogList> Channels = Client.Execute<EmCatalogList>("LiveTv/Channels", RestClient.PostType.GET);
+                    RestClient.RestResult<EmCatalogList> Channels = await Client.ExecuteAsync<EmCatalogList>("LiveTv/Channels", RestClient.PostType.GET);
                     if (Channels.Success && Channels.Response.TotalRecordCount > 0)
                     {
                         TVChannels = Channels.Response.Items;

@@ -17,3 +17,4 @@ C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\Newtonsoft.Json.
 C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\bin\Debug\RestSharp.xml
 C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\obj\Debug\EmbyVision.exe
 C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\obj\Debug\EmbyVision.pdb
+C:\Users\smillward\Source\Repos\EmbyVision\EmbyVision\obj\Debug\EmbyVision.csprojResolveAssemblyReference.cache

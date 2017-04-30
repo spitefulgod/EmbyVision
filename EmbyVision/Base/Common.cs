@@ -147,12 +147,12 @@ namespace EmbyVision.Base
         /// </summary>
         /// <param name="Source"></param>
         /// <param name="Destination"></param>
-        public static void CopyObject(object Source, object Destination, List<string> DontCopy = null)
+        public static void CopyObject(object Source, object Destination, string[] DontCopy = null)
         {
-            FieldInfo[] myObjectFields = Destination.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            PropertyInfo[] myObjectFields = Destination.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
-            foreach (FieldInfo fi in myObjectFields)
-                if(DontCopy == null || !DontCopy.Contains(fi.Name))
+            foreach (PropertyInfo fi in myObjectFields)
+                if((DontCopy == null || !DontCopy.Contains(fi.Name)) && fi.CanRead && fi.CanWrite)
                     fi.SetValue(Destination, fi.GetValue(Source));
         }
     }

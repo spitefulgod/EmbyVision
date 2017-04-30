@@ -82,8 +82,11 @@
     <Compile Include="Emby\Classes\EmUdpClient.cs" />
     <Compile Include="Emby\Classes\EmUser.cs" />
     <Compile Include="Emby\Classes\EmUserData.cs" />
-    <Compile Include="Emby\EmbyConnector.cs" />
-    <Compile Include="Emby\EmbyServerHelper.cs" />
+    <Compile Include="Emby\EmbyInterpretCommands.cs" />
+    <Compile Include="Emby\EmbyConnectionHelper.cs" />
+    <Compile Include="Emby\EmbySetCommands.cs" />
+    <Compile Include="Emby\EmbyCore.cs" />
+    <Compile Include="Emby\EmbyTalkHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\RestClient.cs" />

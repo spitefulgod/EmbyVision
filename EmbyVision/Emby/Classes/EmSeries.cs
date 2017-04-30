@@ -27,5 +27,43 @@ namespace EmbyVision.Emby.Classes
             }
             return -1;
         }
+        /// <summary>
+        /// Finds the next episode after the one givem
+        /// </summary>
+        /// <param name="Episode"></param>
+        /// <returns></returns>
+        public EmMediaItem FindNext(EmMediaItem Episode)
+        {
+            if (Episode == null || Episode.Type != "Episode")
+                return null;
+            bool Triggered = false;
+            // Find the matching Season.
+            foreach (EmSeason Season in this.Seasons)
+                foreach (EmMediaItem Ep in Season.Episodes)
+                    if (Ep.Id == Episode.Id)
+                        Triggered = true;
+                    else if (Triggered)
+                        return Ep;
+            return null;
+        }
+        /// <summary>
+        /// Finds the episode before this
+        /// </summary>
+        /// <param name="Episode"></param>
+        /// <returns></returns>
+        public EmMediaItem FindPrev(EmMediaItem Episode)
+        {
+            if (Episode == null || Episode.SeriesId != this.Id)
+                return null;
+            EmMediaItem LastEpisode = null;
+            // Find the matching Season.
+            foreach (EmSeason Season in this.Seasons)
+                foreach (EmMediaItem Ep in Season.Episodes)
+                    if (Ep.Id == Episode.Id)
+                        return LastEpisode;
+                    else
+                        LastEpisode = Ep;
+            return null;
+        }
     }
 }
