@@ -66,6 +66,7 @@ namespace EmbyVision.Emby
             List<string> PlayCommands = new List<string>(new string[] { "Play", "Watch", "Start", "Continue", "Resume" });
             List<string> SkipCommands = new List<string>(new string[] { "Play", "Watch", "Start", "Skip to", "Go to" });
             List<string> Clients = new List<string>(new string[] { "Client", "Clients", "Software Clients", "Software Client" });
+            List<string> TimeType = new List<string>(new string[] { "Seconds", "Minutes", "Hours", "Second", "Minute", "Hour" });
             List<SpeechContextItem> All = new List<SpeechContextItem>();
             All.AddRange(Movie);
             All.AddRange(TV);
@@ -531,6 +532,70 @@ namespace EmbyVision.Emby
                             new OptionalCommandList("the"),
                             new CommandList("next"),
                             new CommandList("episode")
+                        )
+                    }
+                });
+                Commands.Add(new VoiceCommand()
+                {
+                    Name = "SkipPosition",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList("Skip", "Fast", "Go", "Move"),
+                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards" }),
+                            new OptionalCommandList("by"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,120)),
+                            new SelectCommandList("TimeType1", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Skip", "Fast", "Go", "Move"),
+                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards" }),
+                            new OptionalCommandList("by"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType1", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time2",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType2", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Skip", "Fast", "Go", "Move"),
+                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards" }),
+                            new OptionalCommandList("by"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,12)),
+                            new SelectCommandList("TimeType1", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time2",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType2", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time3",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType3", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Rewind"),
+                            new OptionalCommandList("by"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,120)),
+                            new SelectCommandList("TimeType1", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Rewind"),
+                            new OptionalCommandList("by"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType1", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time2",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType2", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Rewind"),
+                            new OptionalCommandList("by"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,12)),
+                            new SelectCommandList("TimeType1", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time2",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType2", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time3",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType3", false, TimeType)
                         )
                     }
                 });

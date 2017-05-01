@@ -463,8 +463,8 @@ namespace EmbyVision.Emby
                         break;
                     }
                     EmMediaItem NewEpisode;
-                    // we may now have all the information we need from the client refresh, get them here
-                    await Store.SelectedServer.SelectedClient.NowPlayingItem.Refresh(Store.SelectedServer);
+                    // Client refresh now automatically refreshes the nowplaying item
+                    // await Store.SelectedServer.SelectedClient.NowPlayingItem.Refresh(Store.SelectedServer);
                     SetCurrentEpisode(Store.SelectedServer.SelectedClient.NowPlayingItem);
 
                     if (CommandIndex == 0)
@@ -479,6 +479,53 @@ namespace EmbyVision.Emby
                     {
                         SetCurrentEpisode(NewEpisode);
                         await PlayEpisode();
+                    }
+                    break;
+                case "SkipPosition":
+                    int Direction = -1;
+                    string SkipString = "";
+                    TimeSpan SkipAmount = new TimeSpan(0);
+                    if (SelectList == null)
+                        break;
+                    if (SelectList.ContainsKey("Direction"))
+                        Direction = SelectList["Direction"].ToString() == "forward" ? 1 : -1;
+                    for (int i = 1; i <= 3; i++)
+                    {
+                        if (SelectList.ContainsKey("TimeType" + i.ToString()) && SelectList.ContainsKey("Time" + i.ToString()))
+                        {
+                            long SkipValue = long.Parse(SelectList["Time" + i.ToString()].ToString());
+                            switch (SelectList["TimeType" + i.ToString()].ToString())
+                            {
+                                case "Hours":
+                                case "Hour":
+                                    SkipString += string.Format("{0} hour{1}, ", SkipValue, SkipValue == 1 ? "" : "s");
+                                    SkipAmount += TimeSpan.FromHours(SkipValue);
+                                    break;
+                                case "Minutes":
+                                case "Minute":
+                                    SkipString += string.Format("{0} minute{1}, ", SkipValue, SkipValue == 1 ? "" : "s");
+                                    SkipAmount += TimeSpan.FromMinutes(SkipValue);
+                                    break;
+                                default:
+                                    SkipString += string.Format("{0} second{1}, ", SkipValue, SkipValue == 1 ? "" : "s");
+                                    SkipAmount += TimeSpan.FromSeconds(SkipValue);
+                                    break;
+                            }
+                        }
+                    }
+                    // Skip Forward / backwards.
+                    if (SkipAmount.Ticks > 0)
+                    {
+                        // SOrt the formating.
+                        SkipString = SkipString.Substring(0, SkipString.Length - 2);
+                        if(SkipString.IndexOf(",")>=0)
+                            SkipString = SkipString.Substring(0, SkipString.LastIndexOf(",") - 1) + " and" + SkipString.Substring(SkipString.LastIndexOf(",") + 1);
+                        // Skip
+                        RestResultBase SkipResult = await Store.SelectedServer.SelectedClient.MovePosition(SkipAmount.Ticks * Direction, true);
+                        if (SkipResult.Success)
+                            Store.Talker.Speak(string.Format("Skipping {0} {1}", Direction == 1 ? "forward" : "backwards", SkipString));
+                        else
+                            Store.Talker.Speak(string.Format("Unable to restart the current item {0}", SkipResult.Error));
                     }
                     break;
             }

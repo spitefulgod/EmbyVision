@@ -51,6 +51,8 @@ namespace EmbyVision.Emby.Classes
                 {
                     EmClient.Server = Server;
                     Common.CopyObject(EmClient, this, new string[] {"Server"});
+                    if (EmClient.NowPlayingItem != null)
+                        await EmClient.NowPlayingItem.Refresh(this.Server);
                     return new RestResult<EmClient>(Result) { Response = EmClient };
                 }
                 return new RestResult<EmClient>() { Success = false, Error = "Unable to find matching client to refresh" };
@@ -184,6 +186,31 @@ namespace EmbyVision.Emby.Classes
             using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
             {
                 RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing/Seek?SeekPositionTicks={1}", this.Id, Position), PostType.POST);
+                return Result;
+            }
+        }
+        /// <summary>
+        /// Moves to a position in the file
+        /// </summary>
+        /// <param name="Position"></param>
+        /// <param name="RefreshClient"></param>
+        /// <returns></returns>
+        public async Task<RestResultBase> MovePosition(long Position, bool RefreshClient = true)
+        {
+            if (RefreshClient)
+            {
+                RestResult<EmClient> CurrentClient = await Refresh();
+                if (!CurrentClient.Success || CurrentClient.Response == null)
+                    return CurrentClient;
+            }
+            if (this.NowPlayingItem == null)
+                return new RestResultBase() { Error = "No item currently playing", Success = false };
+            using (RestClient Client = Server.Conn.GetClient(Server.SelectedUser))
+            {
+                long NewPosition = this.NowPlayingItem.UserData.PlaybackPositionTicks += Position;
+                NewPosition = NewPosition > this.NowPlayingItem.RunTimeTicks ? this.NowPlayingItem.RunTimeTicks - 1 : NewPosition;
+                NewPosition = NewPosition < 0 ? 0 : NewPosition;
+                RestResult Result = await Client.ExecuteAsync(string.Format("Sessions/{0}/Playing/Seek?SeekPositionTicks={1}", this.Id, NewPosition), PostType.POST);
                 return Result;
             }
         }
