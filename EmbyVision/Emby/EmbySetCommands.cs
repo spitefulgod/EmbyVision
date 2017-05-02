@@ -87,6 +87,7 @@ namespace EmbyVision.Emby
                             new OptionalCommandList("to"),
                             new OptionalCommandList("the"),
                             new SelectCommandList("Temp", false, Servers),
+                            new OptionalCommandList("number"),
                             new SelectCommandList("Server", true, Store.Servers, "ServerName")
                         )
                     }
@@ -146,13 +147,13 @@ namespace EmbyVision.Emby
                     Commands = new List<SpeechItem>()
                     {
                         new SpeechItem(
-                                new CommandList("How Many", "What"),
+                                new CommandList("How Many", "What", "List"),
                                 new CommandList("audio", "sound", "language"),
                                 new CommandList("tracks", "streams", "channel", "channels"),
-                                new OptionalCommandList("are", "are available", "does this", "are there"),
-                                new OptionalCommandList("on this"),
+                                new OptionalCommandList("are", "are available", "does this", "are there", "that"),
+                                new OptionalCommandList("on this", "this"),
                                 new OptionalCommandList(All),
-                                new OptionalCommandList("have", "contain")
+                                new OptionalCommandList("have", "contain", "contains", "has")
                             )
                     }
                 });
@@ -177,6 +178,7 @@ namespace EmbyVision.Emby
                     {
                         new SpeechItem(
                             new CommandList("Refresh", "Update"),
+                            new OptionalCommandList("my", "available"), 
                             new CommandList("Media")
                             )
                     }
@@ -189,6 +191,35 @@ namespace EmbyVision.Emby
                         new SpeechItem(
                             new CommandList("What am i watching")
                             )
+                    }
+                });
+                Commands.Add(new VoiceCommand()
+                {
+                    Name = "ProgramInfo",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList("Tell me"),
+                            new OptionalCommandList("more"),
+                            new OptionalCommandList("information", "details"),
+                            new CommandList("about what i'm watching")
+                        ),
+                        new SpeechItem(
+                            new CommandList("Tell me"),
+                            new OptionalCommandList("more"),
+                            new OptionalCommandList("information", "details"),
+                            new CommandList("about", "what happens in"),
+                            new OptionalCommandList("this", "the current"),
+                            new CommandList(All)
+                        ),
+                        new SpeechItem(
+                            new CommandList("What happens", "What is", "Tell me what"),
+                            new OptionalCommandList("in"),
+                            new OptionalCommandList("this"),
+                            new CommandList(All),
+                            new OptionalCommandList("is"),
+                            new OptionalCommandList("about")
+                        )
                     }
                 });
                 await Task.Run(() =>
@@ -219,7 +250,7 @@ namespace EmbyVision.Emby
                                 new OptionalCommandList("viewing", "watching"),
                                 new OptionalCommandList("the"),
                                 new SelectCommandList("Type", false, Channels),
-                                new SelectCommandList("PlayItem", true, Store.SelectedServer.TVChannels, "Name")
+                                new SelectCommandList("PlayItem", false, Store.SelectedServer.TVChannels, "Name")
                             ),
                         new SpeechItem(
                                 new CommandList(PlayCommands),
@@ -351,6 +382,7 @@ namespace EmbyVision.Emby
                             new OptionalCommandList("to"),
                             new OptionalCommandList("the"),
                             new CommandList(Clients),
+                            new OptionalCommandList("number"),
                             new SelectCommandList("Client", true, Store.SelectedServer.Clients, "Client")
                         )
                     }
@@ -375,35 +407,6 @@ namespace EmbyVision.Emby
                             new OptionalCommandList("of", "of the"),
                             new OptionalCommandList("current"),
                             new OptionalCommandList(All)
-                        )
-                    }
-                });
-                Commands.Add(new VoiceCommand()
-                {
-                    Name = "ProgramInfo",
-                    Commands = new List<SpeechItem>()
-                    {
-                        new SpeechItem(
-                            new CommandList("Tell me"),
-                            new OptionalCommandList("more"),
-                            new OptionalCommandList("information", "details"),
-                            new CommandList("about what i'm watching")
-                        ),
-                        new SpeechItem(
-                            new CommandList("Tell me"),
-                            new OptionalCommandList("more"),
-                            new OptionalCommandList("information", "details"),
-                            new CommandList("about", "what happens in"),
-                            new OptionalCommandList("this", "the current"),
-                            new CommandList(All)
-                        ),
-                        new SpeechItem(
-                            new CommandList("What happens", "What is", "Tell me what"),
-                            new OptionalCommandList("in"),
-                            new OptionalCommandList("this"),
-                            new CommandList(All),
-                            new OptionalCommandList("is"),
-                            new OptionalCommandList("about")
                         )
                     }
                 });
@@ -512,6 +515,7 @@ namespace EmbyVision.Emby
                             new OptionalCommandList("viewing", "watching"),
                             new OptionalCommandList("the"),
                             new CommandList(TV),
+                            new OptionalCommandList("number"),
                             new SelectCommandList("TVShow",true,Store.SelectedServer.TVShows,"Name")
                         )
                     }
@@ -542,14 +546,14 @@ namespace EmbyVision.Emby
                     {
                         new SpeechItem(
                             new CommandList("Skip", "Fast", "Go", "Move"),
-                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards" }),
+                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards", "back" }),
                             new OptionalCommandList("by"),
                             new SelectCommandList("Time1",false,Common.NumberList(1,120)),
                             new SelectCommandList("TimeType1", false, TimeType)
                         ),
                         new SpeechItem(
                             new CommandList("Skip", "Fast", "Go", "Move"),
-                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards" }),
+                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards", "back" }),
                             new OptionalCommandList("by"),
                             new SelectCommandList("Time1",false,Common.NumberList(1,59)),
                             new SelectCommandList("TimeType1", false, TimeType),
@@ -559,7 +563,7 @@ namespace EmbyVision.Emby
                         ),
                         new SpeechItem(
                             new CommandList("Skip", "Fast", "Go", "Move"),
-                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards" }),
+                            new SelectCommandList("Direction", false, new string[] {"forward", "backwards", "back" }),
                             new OptionalCommandList("by"),
                             new SelectCommandList("Time1",false,Common.NumberList(1,12)),
                             new SelectCommandList("TimeType1", false, TimeType),
