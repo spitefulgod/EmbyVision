@@ -157,6 +157,8 @@ namespace EmbyVision.Emby
                 Store.InterpretCommands.TalkCatalog();
 
             await Store.SetCommands.SetCommands(Server);
+            // Collect EPG information
+            Store.EPG.Server = Server;
             return Result;
         }
 

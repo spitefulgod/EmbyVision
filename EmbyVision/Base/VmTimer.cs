@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 
 namespace EmbyVision.Base
@@ -117,7 +118,7 @@ namespace EmbyVision.Base
                 return;
             Timer.Stop();
             if (Timer.ID != null && Timers != null)
-                Timers[Timer.ID] = null;
+                Timers.Remove(Timer.ID);
             Timer = null;
         }
         /// <summary>
@@ -136,8 +137,8 @@ namespace EmbyVision.Base
         {
             if (Timers != null)
             {
-                foreach (KeyValuePair<string, TimerDetails> TimerItem in Timers)
-                    StopTimer(TimerItem.Value);
+                while(Timers.Count > 0)
+                    StopTimer(Timers.First().Value);
                 Timers.Clear();
             }
             Timers = null;

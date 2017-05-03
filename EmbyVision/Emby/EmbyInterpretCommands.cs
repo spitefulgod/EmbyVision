@@ -1,5 +1,6 @@
 ﻿using EmbyVision.Base;
 using EmbyVision.Emby.Classes;
+using EmbyVision.Rest;
 using EmbyVision.Speech;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,15 @@ namespace EmbyVision.Emby
                 return;
             switch (Context)
             {
+                case "RefreshGuide":
+                    if (Store.EPG == null)
+                        break;
+                    RestResult EPGCollect = await Store.EPG.Collect();
+                    if (EPGCollect.Success)
+                        Store.Talker.Speak("TV Guide updated");
+                    else
+                        Store.Talker.Speak(string.Format("Unable to update TV Guide {0}", EPGCollect.Error));
+                    break;
                 case "HowMany":
                     if (SelectList["Type"].ToString() == "Server")
                     {

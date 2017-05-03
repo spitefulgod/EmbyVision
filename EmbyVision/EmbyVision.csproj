@@ -65,6 +65,7 @@
     <Compile Include="Emby\Classes\EmConfiguration.cs" />
     <Compile Include="Emby\Classes\EmConnection.cs" />
     <Compile Include="Emby\Classes\EmConnectResult.cs" />
+    <Compile Include="Emby\Classes\EmEPGHeader.cs" />
     <Compile Include="Emby\Classes\EmExchToken.cs" />
     <Compile Include="Emby\Classes\EmImageTags.cs" />
     <Compile Include="Emby\Classes\EmMediaItem.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="Emby\EmbySetCommands.cs" />
     <Compile Include="Emby\EmbyCore.cs" />
     <Compile Include="Emby\EmbyTalkHelper.cs" />
+    <Compile Include="Emby\EPGCollector.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\RestClient.cs" />

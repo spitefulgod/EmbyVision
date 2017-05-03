@@ -42,15 +42,8 @@ namespace EmbyVision.Rest
             public bool Success { get; set; }
             public string Error { get; set; }
             public List<RestSharp.RestResponseCookie> Cookies { get; set; }
-        }
-        public class RestResult : RestResultBase
-        {
-            public string Response { get; set; }
-        }
-        public class RestResult<T> : RestResultBase
-        {
-            public RestResult() { }
-            public RestResult(RestResultBase Source)
+
+            protected void Copy(RestResultBase Source)
             {
                 this.Success = Source.Success;
                 this.Error = Source.Error;
@@ -61,7 +54,24 @@ namespace EmbyVision.Rest
                         this.Cookies.Add(new RestSharp.RestResponseCookie() { Comment = Cookie.Comment, CommentUri = Cookie.CommentUri, Discard = Cookie.Discard, Domain = Cookie.Domain, Expired = Cookie.Expired, Expires = Cookie.Expires, HttpOnly = Cookie.HttpOnly, Name = Cookie.Name, Path = Cookie.Path, Port = Cookie.Port, Secure = Cookie.Secure, Value = Cookie.Value, Version = Cookie.Version });
                 }
             }
+            public RestResultBase() { }
+            public RestResultBase(RestResultBase Source)
+            {
+                Copy(Source);
+            }
+        }
+        public class RestResult : RestResultBase
+        {
+            public string Response { get; set; }
+        }
+        public class RestResult<T> : RestResultBase
+        { 
             public T Response { get; set; }
+            public RestResult() { }
+            public RestResult(RestResultBase Source)
+            {
+                Copy(Source);
+            }
         }
 
         private object Content { get; set; }

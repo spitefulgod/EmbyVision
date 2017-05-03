@@ -634,6 +634,19 @@ namespace EmbyVision.Emby
                         )
                     }
                 });
+                Commands.Add(new VoiceCommand()
+                {
+                    Name = "RefreshGuide",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList("Refresh", "Update"),
+                            new OptionalCommandList("TV", "Television"),
+                            new OptionalCommandList(Channels),
+                            new CommandList("Guide", "Listings", "E P G")
+                        )
+                    }
+                });
             }
             await Task.Run(() =>
             {

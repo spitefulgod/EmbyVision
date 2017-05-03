@@ -25,6 +25,7 @@ namespace EmbyVision.Emby
         public EmbyInterpretCommands InterpretCommands { get; private set; }
         public EmbySetCommands SetCommands { get; private set; }
         public EmbyTalkHelper TalkHelper { get; private set; }
+        public EPGCollector EPG { get; private set; }
         public bool IsConnected
         {
             get
@@ -53,6 +54,9 @@ namespace EmbyVision.Emby
                 InterpretCommands.Dispose();
             InterpretCommands = null;
             TalkHelper = null;
+            if (EPG != null)
+                EPG.Dispose();
+            EPG = null;
             // Var clean up
             ClearMedia();
             SelectedSeries = null;
@@ -73,6 +77,7 @@ namespace EmbyVision.Emby
             SetCommands = new EmbySetCommands(this);
             InterpretCommands = new EmbyInterpretCommands(this);
             TalkHelper = new EmbyTalkHelper(this);
+            EPG = new EPGCollector();
         }
         /// <summary>
         /// Starts the main class
