@@ -20,7 +20,7 @@ The system will remember the last connected server and attempt to connect to tha
 
 For the software to work a client must be available to a server, by default the software will connect to the client with the most supported commands and remote control access.  On my system the client starts automatically at startup along with the software.
 
-Once connected to a valid server with a valid client you can then issue voice commands.  I must state at this point that this system is not designed for use with a computer microphone or continuous speech input, the microsft speech engine is just too flaky and will result in many false positives.  This software should be used microphone that can be activated when needed for speech input, e.g. a amazon fire stick remote or my personal preference the Amulet Voice remote control.
+Once connected to a valid server with a valid client you can then issue voice commands.  I must state at this point that this system is not designed for use with a computer microphone or continuous speech input, the microsft speech engine is just too flaky and will result in many false positives.  This software should be used with a microphone that can be activated when needed for speech input, e.g. a amazon fire stick remote or my personal preference the Amulet Voice remote control.
 
 
 Speech commands can be emulated by typing them into the command prompt prefixed with a colon (:)
