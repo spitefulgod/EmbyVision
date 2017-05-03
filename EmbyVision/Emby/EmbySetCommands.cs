@@ -603,6 +603,37 @@ namespace EmbyVision.Emby
                         )
                     }
                 });
+                Commands.Add(new VoiceCommand()
+                {
+                    Name = "MovePosition",
+                    Commands = new List<SpeechItem>()
+                    {
+                        new SpeechItem(
+                            new CommandList("Skip To", "Go To", "Move To", "Start At", "Jump to"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,120)),
+                            new SelectCommandList("TimeType1", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Skip To", "Go To", "Move To", "Start At", "Jump to"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType1", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time2",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType2", false, TimeType)
+                        ),
+                        new SpeechItem(
+                            new CommandList("Skip To", "Go To", "Move To", "Start At", "Jump to"),
+                            new SelectCommandList("Time1",false,Common.NumberList(1,12)),
+                            new SelectCommandList("TimeType1", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time2",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType2", false, TimeType),
+                            new OptionalCommandList("and"),
+                            new SelectCommandList("Time3",false,Common.NumberList(1,59)),
+                            new SelectCommandList("TimeType3", false, TimeType)
+                        )
+                    }
+                });
             }
             await Task.Run(() =>
             {

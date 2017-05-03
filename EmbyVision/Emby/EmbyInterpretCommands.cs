@@ -481,6 +481,7 @@ namespace EmbyVision.Emby
                         await PlayEpisode();
                     }
                     break;
+                case "MovePosition":
                 case "SkipPosition":
                     int Direction = -1;
                     string SkipString = "";
@@ -519,13 +520,25 @@ namespace EmbyVision.Emby
                         // SOrt the formating.
                         SkipString = SkipString.Substring(0, SkipString.Length - 2);
                         if(SkipString.IndexOf(",")>=0)
-                            SkipString = SkipString.Substring(0, SkipString.LastIndexOf(",") - 1) + " and" + SkipString.Substring(SkipString.LastIndexOf(",") + 1);
-                        // Skip
-                        RestResultBase SkipResult = await Store.SelectedServer.SelectedClient.MovePosition(SkipAmount.Ticks * Direction, true);
-                        if (SkipResult.Success)
-                            Store.Talker.Speak(string.Format("Skipping {0} {1}", Direction == 1 ? "forward" : "backwards", SkipString));
+                            SkipString = SkipString.Substring(0, SkipString.LastIndexOf(",")) + " and" + SkipString.Substring(SkipString.LastIndexOf(",") + 1);
+                        // Skip or move?
+
+                        if (Context == "SkipPosition")
+                        {
+                            RestResultBase SkipResult = await Store.SelectedServer.SelectedClient.MovePosition(SkipAmount.Ticks * Direction, true);
+                            if (SkipResult.Success)
+                                Store.Talker.Speak(string.Format("Skipping {0} {1}", Direction == 1 ? "forward" : "backwards", SkipString));
+                            else
+                                Store.Talker.Speak(string.Format("Unable to restart the current item {0}", SkipResult.Error));
+                        }
                         else
-                            Store.Talker.Speak(string.Format("Unable to restart the current item {0}", SkipResult.Error));
+                        {
+                            RestResultBase SkipResult = await Store.SelectedServer.SelectedClient.SetPosition(SkipAmount.Ticks, true);
+                            if (SkipResult.Success)
+                                Store.Talker.Speak(string.Format("Starting at {0}", SkipString));
+                            else
+                                Store.Talker.Speak(string.Format("Unable to restart the current item {0}", SkipResult.Error));
+                        }
                     }
                     break;
             }
