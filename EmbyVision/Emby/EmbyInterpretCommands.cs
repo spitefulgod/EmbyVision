@@ -289,6 +289,10 @@ namespace EmbyVision.Emby
                                 Store.Talker.Queue(NWWatchingItem.Name);
                             StateEnd = true;
                             break;
+                        default:
+                            Store.Talker.Speak(string.Format("You are currently watching {0}", NWWatchingItem.Name));
+                            StateEnd = true;
+                            break;
                     }
                     // Tell the user when the program is ending.
                     if (StateEnd)

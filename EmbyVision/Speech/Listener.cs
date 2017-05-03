@@ -5,6 +5,10 @@ using System.Speech.Recognition;
 
 namespace EmbyVision.Speech
 {
+    /// <summary>
+    /// Listener - Allows for quick speech / Grammer setups using the MS speech APIs
+    /// Stewart Millward, https://github.com/spitefulgod, if you're gonna use this message me.
+    /// </summary>
     public delegate void SpeechRecognisedHandler(object sender, string Assembly, string Context, string SpokenCommand, int CommandIndex, Dictionary<string, object> SelectList);
 
     public class Listener : IDisposable

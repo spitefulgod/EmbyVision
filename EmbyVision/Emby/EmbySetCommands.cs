@@ -65,7 +65,7 @@ namespace EmbyVision.Emby
             };
             List<string> PlayCommands = new List<string>(new string[] { "Play", "Watch", "Start", "Continue", "Resume" });
             List<string> SkipCommands = new List<string>(new string[] { "Play", "Watch", "Start", "Skip to", "Go to" });
-            List<string> Clients = new List<string>(new string[] { "Client", "Clients", "Software Clients", "Software Client" });
+            List<string> Clients = new List<string>(new string[] { "Client", "Clients", "Software Clients", "Software Client", "Player" });
             List<string> TimeType = new List<string>(new string[] { "Seconds", "Minutes", "Hours", "Second", "Minute", "Hour" });
             List<SpeechContextItem> All = new List<SpeechContextItem>();
             All.AddRange(Movie);
